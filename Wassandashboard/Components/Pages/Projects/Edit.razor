@@ -176,7 +176,7 @@ else
         }
     }
 
-    bool OrganizationExists(int id)
+    bool OrganizationExists(long id)
     {
         using var context = DbFactory.CreateDbContext();
         return context.Projects.Any(e => e.Id == id);

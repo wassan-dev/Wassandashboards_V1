@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Wassandashboard.Data;
 
@@ -11,9 +12,11 @@ using Wassandashboard.Data;
 namespace Wassandashboard.Migrations
 {
     [DbContext(typeof(DashboardDbContext))]
-    partial class DashboardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250207165315_intial_1")]
+    partial class intial_1
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -107,6 +110,9 @@ namespace Wassandashboard.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
+
                     b.Property<string>("RegionName")
                         .HasColumnType("longtext");
 
@@ -117,6 +123,8 @@ namespace Wassandashboard.Migrations
                         .HasColumnType("longtext");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ProjectId");
 
                     b.ToTable("Regions");
                 });
@@ -157,6 +165,17 @@ namespace Wassandashboard.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("userprojects");
+                });
+
+            modelBuilder.Entity("Wassandashboard.Data.Entities.Regions", b =>
+                {
+                    b.HasOne("Wassandashboard.Data.Entities.Projects", "projects")
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("projects");
                 });
 
             modelBuilder.Entity("Wassandashboard.Data.Entities.UserProjects", b =>

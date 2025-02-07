@@ -8,7 +8,7 @@ namespace Wassandashboard.Data.Entities
     {
         [MaxLength(30), Required]
         public string UserName { get; set; }
-        public int ProjectId { get; set; }
+        public long ProjectId { get; set; }
         
         [ForeignKey(nameof(ProjectId))]
         public Projects projects { get; set; }

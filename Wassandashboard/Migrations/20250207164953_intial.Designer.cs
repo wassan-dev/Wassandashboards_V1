@@ -12,8 +12,8 @@ using Wassandashboard.Data;
 namespace Wassandashboard.Migrations
 {
     [DbContext(typeof(DashboardDbContext))]
-    [Migration("20250207142332_initial")]
-    partial class initial
+    [Migration("20250207164953_intial")]
+    partial class intial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -27,11 +27,11 @@ namespace Wassandashboard.Migrations
 
             modelBuilder.Entity("Wassandashboard.Data.Entities.Projects", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<string>("ContactNumber")
                         .IsRequired()
@@ -95,11 +95,11 @@ namespace Wassandashboard.Migrations
 
             modelBuilder.Entity("Wassandashboard.Data.Entities.UserProjects", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
+                        .HasColumnType("bigint");
 
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
 
                     b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -110,8 +110,8 @@ namespace Wassandashboard.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("ProjectId")
-                        .HasColumnType("int");
+                    b.Property<long>("ProjectId")
+                        .HasColumnType("bigint");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime(6)");

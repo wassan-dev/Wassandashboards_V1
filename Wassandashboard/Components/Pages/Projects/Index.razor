@@ -1,10 +1,12 @@
-﻿@* @page "/Projects"
+﻿@page "/Projects"
 
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.AspNetCore.Components.QuickGrid
 @using Wassandashboard.Data.Entities
 @using Wassandashboard.Data
+@using Wassandashboard.Data.Models.Dto
 @inject IJSRuntime JSRuntime
+@inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
 
 <PageTitle>Index</PageTitle>
 
@@ -66,12 +68,12 @@
                         <label class="fw-bold text-primary">Select Project Type:</label>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" id="singleProject"
-                                   @bind="@this.isSingleProject" @oninput="ToggleSingleProject" />
+                            @bind="@this.isSingleProject" @oninput="ToggleSingleProject" />
                             <label class="form-check-label text-dark fw-medium" for="singleProject">Single Project</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="checkbox" id="multipleProjects"
-                                   @bind="@this.isMultipleProjects" @oninput="ToggleMultipleProjects" />
+                            @bind="@this.isMultipleProjects" @oninput="ToggleMultipleProjects" />
                             <label class="form-check-label text-dark fw-medium" for="multipleProjects">Multiple Projects</label>
                         </div>
                     </div>
@@ -80,7 +82,7 @@
                     {
                         <div class="input-group mb-3 shadow-sm rounded">
                             <input type="text" class="form-control border-primary" placeholder="Enter project link"
-                                   @bind="linkInputs[0].Link" />
+                            @bind="linkInputs[0].Link" />
                         </div>
                     }
                     else if (isMultipleProjects)
@@ -92,12 +94,12 @@
                             <!-- Capture i properly -->
                             <div class="input-group mb-2 shadow-sm rounded">
                                 <input type="text" class="form-control border-secondary" placeholder="Project Label"
-                                       value="@linkInputs[index].Label"
-                                       @oninput="e => UpdateProjectLabel(index, e.Value.ToString())" />
+                                value="@linkInputs[index].Label"
+                                @oninput="e => UpdateProjectLabel(index, e.Value.ToString())" />
 
                                 <input type="text" class="form-control border-secondary" placeholder="Enter link"
-                                       value="@linkInputs[index].Link"
-                                       @oninput="e => UpdateProjectLink(index, e.Value.ToString())" />
+                                value="@linkInputs[index].Link"
+                                @oninput="e => UpdateProjectLink(index, e.Value.ToString())" />
 
                                 <button class="btn btn-success px-3" type="button" @onclick="AddNewLink">+</button>
                                 @if (linkInputs.Count() > 1)
@@ -166,16 +168,17 @@
 
 
 @code {
+
     #region Parameters
     [CascadingParameter] public IModalService Modal { get; set; } = default!;
     #endregion
 
     #region Fields
     string universalSearch = "";
-    List<Projects> ProjectsList = new List<Projects>();
-    IQueryable<Projects> Projects = Enumerable.Empty<Projects>().AsQueryable();
+    List<ProjectsGridDTO> ProjectsList = new List<ProjectsGridDTO>();
+    List<ProjectsGridDTO> Projects = new List<ProjectsGridDTO>();
     bool isEditModalOpen = false;
-    Projects? selectedProject;
+    ProjectsGridDTO? selectedProject;
     private List<ProjectLinks> linkInputs = new List<ProjectLinks> { new ProjectLinks() };
     private bool isSingleProject = false;
     private bool isMultipleProjects = false;
@@ -187,25 +190,38 @@
     #region Lifecycle Methods
     protected override async Task OnInitializedAsync()
     {
-        ProjectsList.AddRange(new List<Projects>
-        {
-            new Projects { Id = 1, Name = "Project A", Location = "New York", LocationType = "Urban", DonorName = "Donor X", ContactPersonName = "John Doe", Email = "john@example.com", Status = 1 },
-            new Projects { Id = 2, Name = "Project B", Location = "Los Angeles", LocationType = "Rural", DonorName = "Donor Y", ContactPersonName = "Jane Smith", Email = "jane@example.com", Status = 0 },
-            new Projects { Id = 3, Name = "Project C", Location = "Chicago", LocationType = "Urban", DonorName = "Donor Z", ContactPersonName = "Mike Johnson", Email = "mike@example.com", Status = 1 }
-        });
+        using var context = DbFactory.CreateDbContext();
 
-        Projects = ProjectsList.AsQueryable();
+        var projects = await context.Projects.ToListAsync(); // Fetch data asynchronously
+
+        if(projects != null && projects.Any())
+        {
+            foreach(var data in projects)
+            {
+                if(data != null)
+                {
+                     this.Projects.Add(new ProjectsGridDTO
+            {
+                Id= data.Id,
+                Name =data.Name,
+               
+            });
+                }
+            }
+        }
     }
+
     #endregion
 
     #region Computed Properties
-    IQueryable<Projects> FilteredData => string.IsNullOrEmpty(universalSearch)
-        ? Projects
-        : Projects.Where(c => c.Name.ToLower().Contains(universalSearch.ToLower()));
+    List<ProjectsGridDTO> FilteredData => string.IsNullOrEmpty(universalSearch)
+        ? Projects ?? new List<ProjectsGridDTO>() // Ensure it's not null
+        : Projects?.Where(c => c.Name.ToLower().Contains(universalSearch.ToLower())).ToList() ?? new List<ProjectsGridDTO>();
     #endregion
 
+
     #region Modal Methods
-    private void OpenEditModal(Projects project)
+    private void OpenEditModal(ProjectsGridDTO project)
     {
         if (project != null)
         {
@@ -227,7 +243,7 @@
     }
 
 
-    private void OpenViewModal(Projects project)
+    private void OpenViewModal(ProjectsGridDTO project)
     {
         selectedProject = project;
         isViewModalOpen = true;
@@ -316,7 +332,7 @@
     #region Export Methods
     private async Task ExportToExcel()
     {
-        List<Projects> data = FilteredData.ToList();
+        List<ProjectsGridDTO> data = FilteredData.ToList();
         var columnHeaders = new List<string>
         {
             "Project Name",
@@ -333,14 +349,7 @@
         var fileContents = _excel.GenerateExcelFile(data, columnHeaders, item => new object[]
         {
             item.Name,
-            item.Location,
-            item.LocationType,
-            item.NoofTargetBeneficiaries,
-            item.DonorName,
-            item.ContactPersonName,
-            item.ContactNumber,
-            item.Email,
-            item.StatusText
+            
         });
 
         using (var stream = new MemoryStream(fileContents))
@@ -359,4 +368,4 @@
         public string Link { get; set; } = string.Empty;
     }
     #endregion
-} *@
+}

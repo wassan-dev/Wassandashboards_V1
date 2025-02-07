@@ -1,0 +1,89 @@
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Identity
+@using Wassandashboard.Data.Constants
+@using Wassandashboard.Data.Models
+@inject NavigationManager Navigation
+<h6>@UserName</h6>
+<hr />
+
+@if (response is not null)
+{
+    <ul>
+        @foreach (var per in response)
+        {
+            <li>
+                <label>
+                    <input type="checkbox" @bind="@per.Selected" />
+                    @per.ProjectName
+                </label>
+            </li>
+        }
+    </ul>
+
+    <button @onclick="AddProjects" class="btn btn-success">Update Permissions</button>
+}
+
+
+@code {
+
+    [Parameter]
+    public string UserName { get; set; }
+
+    List<UserProjResponse> response = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var projects = _context.Projects.ToList();
+
+        foreach (var proj in projects)
+        {
+            var presp = new UserProjResponse();
+            presp.UserName = UserName;
+            presp.ProjectId = proj.Id;
+            presp.ProjectName = proj.Name;
+            presp.Selected = _context.UserProjects.Any(x => x.UserName == UserName && x.ProjectId == proj.Id);
+            response.Add(presp);
+        }
+
+    }
+
+
+    private void AddProjects()
+    {
+        foreach (var resp in response)
+        {
+            var fromdb = _context.UserProjects
+                     .FirstOrDefault(x => x.ProjectId == resp.ProjectId&&
+                        x.UserName == resp.UserName);
+
+            if (resp.Selected)
+            {
+                if (fromdb == null)
+                {
+                    var org = new UserProjects
+                        {
+                            UserName = resp.UserName,
+                            ProjectId = resp.ProjectId,
+                        };
+                    _context.Add(org);
+                    _context.SaveChanges();
+                }
+
+            }
+            else
+            {
+                if (fromdb is not null)
+                {
+                    _context.Remove(fromdb);
+                    _context.SaveChanges();
+                }
+            }
+        }
+
+        Navigation.NavigateTo("/users", true);
+    }
+
+
+
+
+}

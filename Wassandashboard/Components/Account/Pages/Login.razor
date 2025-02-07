@@ -1,0 +1,181 @@
+﻿@page "/Account/Login"
+
+@using System.ComponentModel.DataAnnotations
+@using Microsoft.AspNetCore.Authentication
+@using Microsoft.AspNetCore.Identity
+@using Wassandashboard.Data
+@attribute [AllowAnonymous]
+@inject SignInManager<ApplicationUser> SignInManager
+@inject ILogger<Login> Logger
+@inject NavigationManager NavigationManager
+@inject IdentityRedirectManager RedirectManager
+
+<PageTitle>Log in</PageTitle>
+
+<head>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .container-fluid {
+            height: 95vh;
+            display: flex;
+        }
+
+        .image-container {
+            background: url("https://static.vecteezy.com/system/resources/previews/003/689/228/original/online-registration-or-sign-up-login-for-account-on-smartphone-app-user-interface-with-secure-password-mobile-application-for-ui-web-banner-access-cartoon-people-illustration-vector.jpg") no-repeat center center;
+            background-size: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            animation: fadeIn 2s;
+        }
+
+        .login-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background-color: #f5f5f5;
+            height: 100%;
+        }
+
+        .login-box {
+            width: 100%;
+            max-width: 400px;
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: #007bff;
+        }
+
+        .btn-primary {
+            width: 100%;
+            background-color: #007bff;
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+
+        .text-white {
+            color: #fff;
+        }
+    </style>
+</head>
+
+<div class="container-fluid">
+    <div class="col-md-6 d-none d-md-block image-container"></div>
+    <div class="col-md-6 login-container">
+        <div class="login-box">
+            <h3 class="text-center mb-4">Login</h3>
+            <StatusMessage Message="@errorMessage" />
+            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+                <DataAnnotationsValidator />
+                <hr />
+                <ValidationSummary class="text-danger" role="alert" />
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" id="email" placeholder="name@example.com" required />
+                    <ValidationMessage For="() => Input.Email" class="text-danger" />
+                    <div class="invalid-feedback">Please enter a valid email.</div>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" id="password" placeholder="password" required />
+                    <ValidationMessage For="() => Input.Password" class="text-danger" />
+                    <div class="invalid-feedback">Please enter your password.</div>
+                </div>
+                <div class="checkbox mb-3">
+                    <label class="form-label text-white">
+                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
+                        Remember me
+                    </label>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+                <div>
+                    <p class="text-center mt-3">
+                        <a class="text-white" href="Account/ForgotPassword">Forgot your password?</a>
+                    </p>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? errorMessage;
+
+    [CascadingParameter]
+    private HttpContext HttpContext { get; set; } = default!;
+
+    [SupplyParameterFromForm]
+    private InputModel Input { get; set; } = new();
+
+    [SupplyParameterFromQuery]
+    private string? ReturnUrl { get; set; }
+
+    private bool _hasSignedOut = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (!_hasSignedOut && HttpMethods.IsGet(HttpContext.Request.Method))
+        {
+            Logger.LogInformation("Clearing external cookie...");
+            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            _hasSignedOut = true; // Set flag to true so it doesn't run again
+        }
+    }
+
+    public async Task LoginUser()
+    {
+        var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+        if (result.Succeeded)
+        {
+            Logger.LogInformation("User logged in.");
+            if (ReturnUrl == "/" || string.IsNullOrEmpty(ReturnUrl))
+            {
+                ReturnUrl = "/dashboard";
+            }
+            RedirectManager.RedirectTo(ReturnUrl);
+        }
+        else if (result.RequiresTwoFactor)
+        {
+            RedirectManager.RedirectTo("Account/LoginWith2fa", new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+        }
+        else if (result.IsLockedOut)
+        {
+            Logger.LogWarning("User account locked out.");
+            RedirectManager.RedirectTo("Account/Lockout");
+        }
+        else
+        {
+            errorMessage = "Error: Invalid login attempt.";
+        }
+    }
+
+    private sealed class InputModel
+    {
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = "";
+
+        [Required]
+        [DataType(DataType.Password)]
+        public string Password { get; set; } = "";
+
+        [Display(Name = "Remember me?")]
+        public bool RememberMe { get; set; }
+    }
+}

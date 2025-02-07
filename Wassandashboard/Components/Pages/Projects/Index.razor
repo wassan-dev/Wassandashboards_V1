@@ -1,0 +1,362 @@
+﻿@* @page "/Projects"
+
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Wassandashboard.Data.Entities
+@using Wassandashboard.Data
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Index</PageTitle>
+
+<div class="card p-3 mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Projects</h3>
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <AuthorizeView Policy="@Permissions.Projects.Create">
+                <button class="btn btn-success btn-sm d-flex align-items-center gap-2" @onclick=@(e=>Modal.Show<Create>("Create Project"))>
+                    <i class="fa fa-plus"></i> Create New
+                </button>
+            </AuthorizeView>
+            <AuthorizeView Policy="@Permissions.Projects.Export">
+                <button @onclick="ExportToExcel" class="btn btn-success d-flex align-items-center gap-2">
+                    <i class="fa fa-file-excel-o"></i> Export to Excel
+                </button>
+            </AuthorizeView>
+        </div>
+    </div>
+
+    <input type="search" @bind="universalSearch" @bind:event="oninput" placeholder="Search..." class="form-control mb-2 mt-2 w-25" />
+
+    <div class="grid">
+        <QuickGrid class="table table-responsive" Items="FilteredData.AsQueryable()">
+            <PropertyColumn class="text-nowrap" Property="Projects => Projects.Name" Title="Project Name" />
+            <TemplateColumn Context="Projects" Title="Links">
+                <button class="btn btn-info btn-sm" @onclick="() => OpenViewModal(Projects)">
+                    <i class="fa-solid fa-eye"></i> View
+                </button>
+            </TemplateColumn>
+            <TemplateColumn Context="Projects" Title="Actions">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn btn-primary btn-sm" @onclick="() => OpenEditModal(Projects)">
+                        <i class="fa-solid fa-pencil-square-o"></i> Edit
+                    </button>
+                    <a href="@($"projects/delete?id={Projects.Id}")">
+                        <i class="fa-solid fa-trash-o text-danger"></i>
+                    </a>
+                </div>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+</div>
+
+<!-- Modal for Editing Project -->
+@if (isEditModalOpen)
+{
+    <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Project: @selectedProject?.Name</h5>
+                    <button type="button" class="btn-close" @onclick="CloseEditModal"></button>
+                </div>
+                <div class="modal-body">
+
+                    <div class="mb-4">
+                        <label class="fw-bold text-primary">Select Project Type:</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="singleProject"
+                                   @bind="@this.isSingleProject" @oninput="ToggleSingleProject" />
+                            <label class="form-check-label text-dark fw-medium" for="singleProject">Single Project</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="checkbox" id="multipleProjects"
+                                   @bind="@this.isMultipleProjects" @oninput="ToggleMultipleProjects" />
+                            <label class="form-check-label text-dark fw-medium" for="multipleProjects">Multiple Projects</label>
+                        </div>
+                    </div>
+
+                    @if (isSingleProject)
+                    {
+                        <div class="input-group mb-3 shadow-sm rounded">
+                            <input type="text" class="form-control border-primary" placeholder="Enter project link"
+                                   @bind="linkInputs[0].Link" />
+                        </div>
+                    }
+                    else if (isMultipleProjects)
+                    {
+
+                        @for (int i = 0; i < linkInputs.Count(); i++)
+                        {
+                            var index = i;
+                            <!-- Capture i properly -->
+                            <div class="input-group mb-2 shadow-sm rounded">
+                                <input type="text" class="form-control border-secondary" placeholder="Project Label"
+                                       value="@linkInputs[index].Label"
+                                       @oninput="e => UpdateProjectLabel(index, e.Value.ToString())" />
+
+                                <input type="text" class="form-control border-secondary" placeholder="Enter link"
+                                       value="@linkInputs[index].Link"
+                                       @oninput="e => UpdateProjectLink(index, e.Value.ToString())" />
+
+                                <button class="btn btn-success px-3" type="button" @onclick="AddNewLink">+</button>
+                                @if (linkInputs.Count() > 1)
+                                {
+                                    <button class="btn btn-danger px-3" type="button" @onclick="() => RemoveLink(index)">-</button>
+                                }
+                            </div>
+                        }
+
+                    }
+
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary" @onclick="SaveProjectChanges">Save</button>
+                    <button class="btn btn-secondary" @onclick="CloseEditModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@if (isViewModalOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(255, 255, 255, 0.6);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 rounded-3 shadow-sm">
+
+                <!-- Modal Header -->
+                <div class="modal-header bg-white border-bottom">
+                    <h5 class="modal-title fw-semibold text-primary">🔗 Project Links</h5>
+                    <button type="button" class="btn-close" @onclick="CloseViewModal"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4">
+                    @if (selectedProject != null && selectedProject.ProjectLinks != null && selectedProject.ProjectLinks.Any())
+                    {
+                        <ul class="list-group">
+                            @foreach (var link in selectedProject.ProjectLinks)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light rounded mb-2">
+                                    <div class="text-secondary">
+                                        <i class="fas fa-link me-2"></i>
+                                        <strong>@link.Label</strong>
+                                    </div>
+                                    <a href="@link.Link" class="btn btn-sm btn-outline-primary rounded-pill px-3" target="_blank">
+                                        Open 🔗
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-center text-muted">🚫 No links available.</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+@code {
+    #region Parameters
+    [CascadingParameter] public IModalService Modal { get; set; } = default!;
+    #endregion
+
+    #region Fields
+    string universalSearch = "";
+    List<Projects> ProjectsList = new List<Projects>();
+    IQueryable<Projects> Projects = Enumerable.Empty<Projects>().AsQueryable();
+    bool isEditModalOpen = false;
+    Projects? selectedProject;
+    private List<ProjectLinks> linkInputs = new List<ProjectLinks> { new ProjectLinks() };
+    private bool isSingleProject = false;
+    private bool isMultipleProjects = false;
+    private string singleProjectLink = string.Empty;
+    private bool isViewModalOpen = false;
+
+    #endregion
+
+    #region Lifecycle Methods
+    protected override async Task OnInitializedAsync()
+    {
+        ProjectsList.AddRange(new List<Projects>
+        {
+            new Projects { Id = 1, Name = "Project A", Location = "New York", LocationType = "Urban", DonorName = "Donor X", ContactPersonName = "John Doe", Email = "john@example.com", Status = 1 },
+            new Projects { Id = 2, Name = "Project B", Location = "Los Angeles", LocationType = "Rural", DonorName = "Donor Y", ContactPersonName = "Jane Smith", Email = "jane@example.com", Status = 0 },
+            new Projects { Id = 3, Name = "Project C", Location = "Chicago", LocationType = "Urban", DonorName = "Donor Z", ContactPersonName = "Mike Johnson", Email = "mike@example.com", Status = 1 }
+        });
+
+        Projects = ProjectsList.AsQueryable();
+    }
+    #endregion
+
+    #region Computed Properties
+    IQueryable<Projects> FilteredData => string.IsNullOrEmpty(universalSearch)
+        ? Projects
+        : Projects.Where(c => c.Name.ToLower().Contains(universalSearch.ToLower()));
+    #endregion
+
+    #region Modal Methods
+    private void OpenEditModal(Projects project)
+    {
+        if (project != null)
+        {
+            linkInputs = (project.ProjectLinks == null || !project.ProjectLinks.Any())
+                ? new List<ProjectLinks> { new ProjectLinks { Label = string.Empty, Link = string.Empty } }
+                : new List<ProjectLinks>(project.ProjectLinks);
+
+            isSingleProject = linkInputs.Count == 1;
+            isMultipleProjects = linkInputs.Count > 1;
+            selectedProject = project;
+            isEditModalOpen = true;
+        }
+    }
+
+    private void CloseEditModal()
+    {
+        isEditModalOpen = false;
+        selectedProject = null;
+    }
+
+
+    private void OpenViewModal(Projects project)
+    {
+        selectedProject = project;
+        isViewModalOpen = true;
+    }
+
+    private void CloseViewModal()
+    {
+        isViewModalOpen = false;
+        selectedProject = null;
+    }
+
+    #endregion
+
+    #region Event Handlers
+    private async Task ToggleSingleProject(ChangeEventArgs e)
+    {
+        isSingleProject = (bool)e.Value;
+        isMultipleProjects = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task ToggleMultipleProjects(ChangeEventArgs e)
+    {
+        isMultipleProjects = (bool)e.Value;
+        isSingleProject = false;
+        await InvokeAsync(StateHasChanged);
+    }
+    #endregion
+
+    #region Project Links Management
+    private void UpdateProjectLabel(int index, string value)
+    {
+        if (index >= 0 && index < linkInputs.Count())
+        {
+            linkInputs[index].Label = value;
+        }
+    }
+
+    private void UpdateProjectLink(int index, string value)
+    {
+        if (index >= 0 && index < linkInputs.Count())
+        {
+            linkInputs[index].Link = value;
+        }
+    }
+
+    private void AddNewLink()
+    {
+        linkInputs.Add(new ProjectLinks());
+    }
+
+    private void RemoveLink(int index)
+    {
+        if (index >= 0 && index < linkInputs.Count)
+        {
+            linkInputs.RemoveAt(index);
+        }
+    }
+
+    private void SaveProjectChanges()
+    {
+        if (selectedProject != null)
+        {
+            selectedProject.ProjectLinks = new List<ProjectLinks>();
+            if (isSingleProject)
+            {
+                selectedProject.ProjectLinks.Add(new ProjectLinks
+                    {
+                        Label = selectedProject.Name,
+                        Link = linkInputs.First().Link
+                    });
+            }
+            else
+            {
+                selectedProject.ProjectLinks.AddRange(linkInputs);
+            }
+
+            isEditModalOpen = false;
+            linkInputs.Clear();
+            isMultipleProjects = false;
+            isSingleProject = false;
+        }
+    }
+    #endregion
+
+    #region Export Methods
+    private async Task ExportToExcel()
+    {
+        List<Projects> data = FilteredData.ToList();
+        var columnHeaders = new List<string>
+        {
+            "Project Name",
+            "Location",
+            "Location Type",
+            "No of Target Beneficiaries",
+            "CSR/Partner/Donor Name",
+            "Contact Person",
+            "Contact Number",
+            "Email",
+            "Status"
+        };
+
+        var fileContents = _excel.GenerateExcelFile(data, columnHeaders, item => new object[]
+        {
+            item.Name,
+            item.Location,
+            item.LocationType,
+            item.NoofTargetBeneficiaries,
+            item.DonorName,
+            item.ContactPersonName,
+            item.ContactNumber,
+            item.Email,
+            item.StatusText
+        });
+
+        using (var stream = new MemoryStream(fileContents))
+        {
+            var fileName = $"Projects-{DateTime.Now}.xlsx";
+            var base64Data = Convert.ToBase64String(stream.ToArray());
+            await JSRuntime.InvokeVoidAsync("saveAsFile", fileName, base64Data);
+        }
+    }
+    #endregion
+
+    #region Models
+    public class ProjectLinks
+    {
+        public string Label { get; set; } = string.Empty;
+        public string Link { get; set; } = string.Empty;
+    }
+    #endregion
+} *@

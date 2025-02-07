@@ -1,0 +1,92 @@
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Identity
+@using Wassandashboard.Data.Constants
+@using Wassandashboard.Data.Models
+@inject ApplicationDbContext _context
+@inject NavigationManager Navigation
+<h6>@role?.Name- @role?.Id</h6>
+<hr/>
+
+@if (response is not null)
+{
+    <ul style="list-style-type:none">
+        @foreach (var per in response)
+        {
+            <li>
+                <label>
+                    <input type="checkbox"  @bind="@per.Selected"/>
+                    @per.PermissionValue 
+                </label>
+            </li>
+        }
+    </ul>
+
+    <button @onclick="AddPermissions" class="btn btn-success" >Update Permissions</button>
+}
+
+
+@code {
+
+    [Parameter]
+    public IdentityRole role { get; set; }
+
+    List<PermissionsResopnse> response = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var permissions = _context.RoleClaims.Where(x=>x.RoleId==role.Id).ToList();
+
+        //Type type = typeof(Permissions.HouseHolds);
+        foreach (var prop in typeof(Permissions).GetNestedTypes().SelectMany(c => c.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)))
+        {
+            var propertyValue = prop.GetValue(null).ToString();
+            var presp = new PermissionsResopnse();
+            presp.PermissionValue = propertyValue;
+            presp.RoleId = role.Id;
+            presp.Selected = permissions.Any(p => p.ClaimValue == presp.PermissionValue);
+            response.Add(presp);
+        }
+
+    }
+
+
+    private void AddPermissions()
+    {
+        foreach(var resp in response)
+        {
+            var fromdb = _context.RoleClaims
+                     .FirstOrDefault(x => x.ClaimValue == resp.PermissionValue &&
+                        x.RoleId == resp.RoleId);
+
+            if (resp.Selected)
+            {
+                if(fromdb == null)
+                {
+                    var permission = new IdentityRoleClaim<string>
+                        {
+                            RoleId = resp.RoleId,
+                            ClaimValue = resp.PermissionValue,
+                            ClaimType= ApplicationClaimTypes.Permission
+                        };
+                    _context.Add(permission);
+                    _context.SaveChanges();
+                }
+               
+            }
+            else
+            {
+                if(fromdb is not null)
+                {
+                    _context.Remove(fromdb);
+                    _context.SaveChanges();
+                }
+            }
+        }
+
+        Navigation.NavigateTo("/roles", true);
+    }
+
+
+
+
+}

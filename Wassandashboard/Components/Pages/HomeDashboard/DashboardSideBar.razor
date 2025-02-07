@@ -1,0 +1,132 @@
+﻿
+
+<style>
+    .layout-container {
+        display: flex;
+        height: 100vh;
+    }
+
+    .sidebar {
+        background: #f8f9fa;
+        width: 250px;
+        padding: 15px;
+        transition: width 0.3s ease;
+        overflow-y: auto;
+    }
+
+    .content {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .nav-link {
+        font-weight: 500;
+        color: #333;
+        display: block;
+        padding: 10px;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+        .nav-link:hover {
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+
+    .submenu {
+        list-style: none;
+        padding-left: 15px;
+        margin: 0;
+        display: none;
+    }
+
+        .submenu.show {
+            display: block;
+        }
+</style>
+
+<div class="layout-container">
+    <!-- Sidebar Section -->
+    <nav class="sidebar card py-2 mb-4">
+        <ul class="nav flex-column">
+            @foreach (var item in menuItems)
+            {
+                <li class="nav-item">
+                    @if (item.SubItems?.Any() == true)
+                    {
+                        <a href="javascript:void(0)" class="nav-link" @onclick="() => ToggleSubmenu(item)">
+                            @item.Title
+                            <i class="bi small @(item.IsExpanded ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+                        </a>
+                        <ul class="submenu @(item.IsExpanded ? "show" : "")">
+                            @foreach (var subItem in item.SubItems)
+                            {
+                                <li>
+                                    <a class="nav-link" href="javascript:void(0)" @onclick="() => LoadContent(subItem.Url)">
+                                        @subItem.Title
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <a class="nav-link" href="javascript:void(0)" @onclick="() => LoadContent(item.Url)">
+                            @item.Title
+                        </a>
+                    }
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
+
+
+@code {
+    private RenderFragment? CurrentContent { get; set; }
+
+    private List<MenuItem> menuItems = new()
+    {
+        new MenuItem("Home", "home"),
+        new MenuItem("Submenu Links", "#", new List<MenuItem>
+        {
+            new MenuItem("Page 1", "page1"),
+            new MenuItem("Page 2", "page2"),
+            new MenuItem("Page 3", "page3")
+        }),
+        new MenuItem("More Menus", "#", new List<MenuItem>
+        {
+            new MenuItem("Page 4", "page4"),
+            new MenuItem("Page 5", "page5"),
+            new MenuItem("Page 6", "page6")
+        }),
+        new MenuItem("Demo Link", "demo"),
+        new MenuItem("Another Link", "another"),
+    };
+
+    private void ToggleSubmenu(MenuItem item)
+    {
+        item.IsExpanded = !item.IsExpanded;
+    }
+
+    private void LoadContent(string page)
+    {
+        
+    }
+
+    public class MenuItem
+    {
+        public string Title { get; set; }
+        public string Url { get; set; }
+        public List<MenuItem>? SubItems { get; set; }
+        public bool IsExpanded { get; set; }
+
+        public MenuItem(string title, string url, List<MenuItem>? subItems = null)
+        {
+            Title = title;
+            Url = url;
+            SubItems = subItems;
+        }
+    }
+}

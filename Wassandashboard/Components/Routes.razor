@@ -1,0 +1,21 @@
+﻿@using Wassandashboard.Components.Account.Shared
+
+
+<CascadingBlazoredModal Size="ModalSize.Large" 
+                        HideCloseButton="false"
+                        AnimationType="ModalAnimationType.PopInOut"
+                        HideHeader="false"
+                        ActivateFocusTrap="true"
+                        DisableBackgroundCancel="true"
+>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+                <NotAuthorized>
+                    <RedirectToLogin />
+                </NotAuthorized>
+            </AuthorizeRouteView>
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+    </Router>
+</CascadingBlazoredModal>

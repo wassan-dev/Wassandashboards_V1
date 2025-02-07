@@ -1,0 +1,22 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager _navigation
+
+<div>
+    <TopNavMenu />
+    <div class="row d-flex">
+        <div class="col-sm-12 col-lg-12 mt-0 pt-0">
+          @Body
+        </div>
+    </div>
+    <Footer />
+</div>
+
+
+<div id="blazor-error-ui">
+    An unhandled error has occurred.
+    <a href="" class="reload">Reload</a>
+    <a class="dismiss">🗙</a>
+</div>
+@code{
+   
+}

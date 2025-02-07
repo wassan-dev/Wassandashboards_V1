@@ -1,0 +1,60 @@
+﻿@page "/users"
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Wassandashboard.Data.Constants
+@using Wassandashboard.Data.Entities
+@using Wassandashboard.Data
+@inject ApplicationDbContext _context
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+
+<PageTitle>Index</PageTitle>
+<div class="row">
+    <div class="d-flex justify-content-between align-items-center">
+    <h4 class="mt-3">Users</h4>
+        <a class="btn btn-sm btn-success " href="/account/register">Create New</a>
+    </div>
+    <hr />
+    <div class="card">
+
+        <QuickGrid Class="table" Items="Users" Pagination="pagination">
+            <PropertyColumn Property="user =>user.UserName " />
+            <PropertyColumn Property="user =>user.Email " />
+            <PropertyColumn Property="user =>user.EmailConfirmed" Title="Active" />
+            <TemplateColumn class="text-nowrap" Context="user">
+                <button @onclick="@(e=>ShowNgos(user.Email))" class="btn btn-primary btn-sm w-100">Manage Projects</button>
+            </TemplateColumn>
+            <TemplateColumn class="text-nowrap" Context="user">
+                <button @onclick="@(e=>ShowRoles(user.Email))" class="btn btn-success btn-sm w-100">Manage Roles</button>
+            </TemplateColumn>
+        </QuickGrid>
+        <Paginator State="pagination" />
+    </div>
+ </div>
+@code {
+
+    public IQueryable<ApplicationUser> Users { get; set; }
+    
+    PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
+
+    [CascadingParameter]
+    public IModalService Modal { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        var list = await UserManager.GetUsersInRoleAsync(AppConstants.ApplicationRole);
+        Users = list.AsQueryable();
+    }
+    private void ShowNgos(string UserName)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("UserName", UserName);
+        Modal.Show<ManageNgos>("Manage Projects", parameters: parameters);
+    }
+    private void ShowRoles(string UserName)
+    {
+        var parameters = new ModalParameters();
+        parameters.Add("UserName", UserName);
+        Modal.Show<ManageRoles>("Manage Roles", parameters: parameters);
+    }
+}

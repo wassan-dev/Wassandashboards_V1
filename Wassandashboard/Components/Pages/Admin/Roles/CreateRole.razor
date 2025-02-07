@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@using Wassandashboard.Data.Entities
+
+@inject ApplicationDbContext _context
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="Role" OnValidSubmit="AddRole" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>     
+                <span>Note: Roles will starts with Wassandashboard-</span>
+                <InputText id="name" @bind-Value="Role.Name" class="form-control" />
+                <ValidationMessage For="() => Role.Name" class="text-danger" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+
+    [SupplyParameterFromForm]
+    public IdentityRole Role { get; set; } = new();
+
+    // To protect from overposting attacks, see https://aka.ms/RazorPagesCRUD
+    public async Task AddRole()
+    {
+        Role.Name = $"Wassandashboard-{Role.Name}";
+        await RoleManager.CreateAsync(Role);
+        NavigationManager.NavigateTo("/roles",true);
+    }
+}

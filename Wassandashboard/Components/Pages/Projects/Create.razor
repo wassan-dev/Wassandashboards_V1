@@ -1,0 +1,142 @@
+﻿@page "/projects/create"
+
+@using Microsoft.EntityFrameworkCore
+@using Wassandashboard.Data.Entities
+@inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Create</PageTitle>
+<div class="row justify-content-center">
+    <div class="col-md-12">
+        <EditForm method="post" Model="project" OnValidSubmit="AddOrganization" FormName="create" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="Name">Project Name<span class="text-danger">*</span></label>
+                        <InputText id="Name" class="form-control" @bind-Value="project.Name" />
+                        <ValidationMessage For="@(() => project.Name)" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="Location">Location<span class="text-danger">*</span></label>
+                        <InputText id="Location" class="form-control" @bind-Value="project.Location" />
+                        <ValidationMessage For="@(() => project.Location)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="LocationType">Location Type<span class="text-danger">*</span></label>
+                        <InputSelect id="LocationType" class="form-control" @bind-Value="project.LocationType">
+                            <option value="">Select</option>
+                            <option value="Urban">Urban</option>
+                            <option value="Urban slums">Urban slums</option>
+                            <option value="Rural">Rural</option>
+                            <option value="Adivasi">Adivasi</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => project.LocationType)" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="NoofTargetBeneficiaries">No of Target Beneficiaries<span class="text-danger">*</span></label>
+                        <InputNumber id="NoofTargetBeneficiaries" class="form-control" @bind-Value="project.NoofTargetBeneficiaries" />
+                        <ValidationMessage For="@(() => project.NoofTargetBeneficiaries)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="DonorName">CSR/Partner/Donor Name<span class="text-danger">*</span></label>
+                        <InputText id="DonorName" class="form-control" @bind-Value="project.DonorName" />
+                        <ValidationMessage For="@(() => project.DonorName)" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="ContactPersonName">Contact Person Name<span class="text-danger">*</span></label>
+                        <InputText id="ContactPersonName" class="form-control" @bind-Value="project.ContactPersonName" />
+                        <ValidationMessage For="@(() => project.ContactPersonName)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="ContactNumber">Contact Number<span class="text-danger">*</span></label>
+                        <InputText id="ContactNumber" class="form-control" @bind-Value="project.ContactNumber" />
+                        <ValidationMessage For="@(() => project.ContactNumber)" />
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="Email">Email<span class="text-danger">*</span></label>
+                        <InputText id="Email" class="form-control" @bind-Value="project.Email" />
+                        <ValidationMessage For="@(() => project.Email)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-start">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label for="Status">Status<span class="text-danger">*</span></label>
+                        <InputSelect id="Status" class="form-control" @bind-Value="project.Status">
+                            <option value="-1">Select</option>
+                            <option value="1">Live</option>
+                            <option value="0">Closed</option>
+                        </InputSelect>
+                        <ValidationMessage For="@(() => project.Status)" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <button type="submit" class="btn btn-primary float-end">Create</button>
+                </div>
+                <div class="col-md-6">
+                    <a href="/projects" class="btn btn-secondary">Close</a>
+                </div>
+            </div>
+        </EditForm>
+    </div>
+</div>
+
+
+
+@code {
+    DashboardDbContext context = default!;
+    [SupplyParameterFromForm]
+    public Projects project { get; set; } = new(); 
+    private EditContext editContext;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        editContext = new EditContext(project);
+        context = DbFactory.CreateDbContext();
+        project.Status = -1; // Default invalid value for dropdown.
+    }
+
+    public async Task AddOrganization()
+    {
+        if (!editContext.Validate())
+        {
+            return;
+        }
+        using var context = DbFactory.CreateDbContext();
+        context.Projects.Add(project);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/projects", true);
+    }
+}

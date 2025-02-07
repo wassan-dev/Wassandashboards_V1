@@ -1,0 +1,23 @@
+﻿@inherits LayoutComponentBase
+@layout Wassandashboard.Components.Layout.MainLayout
+
+<div class="card p-3 mt-5">
+
+    <h4 class="px-4">Administrator</h4>
+    <hr />
+
+    <div class="cards row d-flex">
+        <div class="card col " style="background-color:cadetblue" @onclick="@(e=>_navigation.NavigateTo("/users"))">
+            <p class="tip mt-2">Users</p>
+        </div>
+        <div class="card red col" style="background-color:darkolivegreen" @onclick="@(e=>_navigation.NavigateTo("/roles"))">
+            <p class="tip mt-2">Roles</p>
+        </div>       
+        
+    </div>
+        @Body
+</div>
+
+@code {
+    
+}

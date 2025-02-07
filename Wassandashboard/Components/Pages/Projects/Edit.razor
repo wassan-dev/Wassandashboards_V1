@@ -1,0 +1,184 @@
+﻿@page "/projects/edit"
+
+@using Microsoft.EntityFrameworkCore
+@using Wassandashboard.Data.Entities
+@inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Edit</PageTitle>
+
+<h4 class="text-center">Edit Project</h4>
+<hr />
+@if (Projects is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-12">
+            <EditForm method="post" Model="Projects" OnValidSubmit="UpdateOrganization" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+                <input type="hidden" name="Projects.Id" value="@Projects.Id" />
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Name">Project Name<span class="text-danger">*</span></label>
+                            <InputText id="Name" class="form-control" @bind-Value="Projects.Name" />
+                            <ValidationMessage For="@(() => Projects.Name)" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Location">Location<span class="text-danger">*</span></label>
+                            <InputText id="Location" class="form-control" @bind-Value="Projects.Location" />
+                            <ValidationMessage For="@(() => Projects.Location)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="LocationType">Location Type<span class="text-danger">*</span></label>
+                            <InputSelect id="LocationType" class="form-control" @bind-Value="Projects.LocationType">
+                                <option value="">Select</option>
+                                <option value="Urban">Urban</option>
+                                <option value="Urban slums">Urban slums</option>
+                                <option value="Rural">Rural</option>
+                                <option value="Adivasi">Adivasi</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => Projects.LocationType)" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="NoofTargetBeneficiaries">No of Target Beneficiaries<span class="text-danger">*</span></label>
+                            <InputNumber id="NoofTargetBeneficiaries" class="form-control" @bind-Value="Projects.NoofTargetBeneficiaries" />
+                            <ValidationMessage For="@(() => Projects.NoofTargetBeneficiaries)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="DonorName">CSR/Partner/Donor Name<span class="text-danger">*</span></label>
+                            <InputText id="DonorName" class="form-control" @bind-Value="Projects.DonorName" />
+                            <ValidationMessage For="@(() => Projects.DonorName)" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="ContactPersonName">Contact Person Name<span class="text-danger">*</span></label>
+                            <InputText id="ContactPersonName" class="form-control" @bind-Value="Projects.ContactPersonName" />
+                            <ValidationMessage For="@(() => Projects.ContactPersonName)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="ContactNumber">Contact Number<span class="text-danger">*</span></label>
+                            <InputText id="ContactNumber" class="form-control" @bind-Value="Projects.ContactNumber" />
+                            <ValidationMessage For="@(() => Projects.ContactNumber)" />
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Email">Email<span class="text-danger">*</span></label>
+                            <InputText id="Email" class="form-control" @bind-Value="Projects.Email" />
+                            <ValidationMessage For="@(() => Projects.Email)" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row justify-content-start">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="Status">Status<span class="text-danger">*</span></label>
+                            <InputSelect id="Status" class="form-control" @bind-Value="Projects.Status">
+                                <option value="-1">Select</option>
+                                <option value="1">Live</option>
+                                <option value="0">Closed</option>
+                            </InputSelect>
+                            <ValidationMessage For="@(() => Projects.Status)" />
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary float-end">Save</button>
+                <a href="/projects" class="btn">Back</a>
+            </EditForm>
+        </div>
+    </div>
+}
+
+
+@code {
+    [SupplyParameterFromQuery(Name = "Id")]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    public Projects? Projects { get; set; }
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        using var context = DbFactory.CreateDbContext();
+        Projects ??= await context.Projects.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (Projects is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+
+
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more details, see https://aka.ms/RazorPagesCRUD.
+    public async Task UpdateOrganization()
+    {
+
+
+        using var context = DbFactory.CreateDbContext();
+
+        // Fetch the current org from the database
+        var existingOrg = await context.Projects.AsNoTracking().FirstOrDefaultAsync(g => g.Id == Projects.Id);
+
+        if (existingOrg == null)
+        {
+            // org not found
+            NavigationManager.NavigateTo("notfound");
+            return;
+        }           
+        context.Attach(Projects!).State = EntityState.Modified;       
+        try
+        {
+
+            await context.SaveChangesAsync();            
+            NavigationManager.NavigateTo("/projects",true);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!OrganizationExists(Projects.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+    }
+
+    bool OrganizationExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.Projects.Any(e => e.Id == id);
+    }
+}

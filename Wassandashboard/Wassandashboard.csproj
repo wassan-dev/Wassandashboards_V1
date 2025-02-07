@@ -1,0 +1,67 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-rwi-2d07aa33-6c09-4529-a012-b809c54dd34c</UserSecretsId>
+    <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Components\Pages\AttendanceEntityPages\**" />
+    <Compile Remove="Components\Pages\Events\**" />
+    <Compile Remove="Components\Pages\Gallery\**" />
+    <Compile Remove="Components\Pages\Public\**" />
+    <Compile Remove="Components\Pages\Resources\**" />
+    <Content Remove="Components\Pages\AttendanceEntityPages\**" />
+    <Content Remove="Components\Pages\Events\**" />
+    <Content Remove="Components\Pages\Gallery\**" />
+    <Content Remove="Components\Pages\Public\**" />
+    <Content Remove="Components\Pages\Resources\**" />
+    <EmbeddedResource Remove="Components\Pages\AttendanceEntityPages\**" />
+    <EmbeddedResource Remove="Components\Pages\Events\**" />
+    <EmbeddedResource Remove="Components\Pages\Gallery\**" />
+    <EmbeddedResource Remove="Components\Pages\Public\**" />
+    <EmbeddedResource Remove="Components\Pages\Resources\**" />
+    <None Remove="Components\Pages\AttendanceEntityPages\**" />
+    <None Remove="Components\Pages\Events\**" />
+    <None Remove="Components\Pages\Gallery\**" />
+    <None Remove="Components\Pages\Public\**" />
+    <None Remove="Components\Pages\Resources\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Remove="Components\Pages\Home.razor" />
+  </ItemGroup>
+
+  
+
+  <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
+    <PackageReference Include="Azure.Identity" Version="1.12.0" />
+    <PackageReference Include="BlazorCalendar" Version="2.7.0" />
+    <PackageReference Include="Blazored.Modal" Version="7.3.1" />
+    <PackageReference Include="EPPlus" Version="7.3.0" />
+    <PackageReference Include="Microsoft.AspNet.Identity.Core" Version="2.2.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.QuickGrid.EntityFrameworkAdapter" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="8.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="8.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.11">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.20.1" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+  </ItemGroup>
+
+  
+
+  <ItemGroup>
+    <Content Update="Components\Pages\Admin\Users\ManageRoles.razor">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+
+</Project>

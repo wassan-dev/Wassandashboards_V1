@@ -1,0 +1,14 @@
+﻿<div class="d-flex justify-content-between align-items-center">
+    <div>
+        <h4>@Header</h4>
+    </div>
+    <a class="btn btn-success" href="@BtnLink">Add New</a>
+</div>
+<hr />
+
+@code {
+    [Parameter]
+    public string Header { get; set; }            
+    [Parameter]
+    public string BtnLink { get; set; }            
+}

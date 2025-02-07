@@ -1,0 +1,84 @@
+﻿@using System.Reflection
+@using Microsoft.AspNetCore.Identity
+@using Wassandashboard.Data.Constants
+@using Wassandashboard.Data.Models
+@inject NavigationManager Navigation
+@inject RoleManager<IdentityRole> roleManager
+@inject UserManager<ApplicationUser> userManager
+<h6>@UserName</h6>
+
+<hr />
+
+@if (response is not null)
+{
+    <ul>
+        @foreach (var per in response)
+        {
+            <li>
+                <label>
+                    <input type="checkbox" @bind="@per.Selected" />
+                    @per.RoleName
+                </label>
+            </li>
+        }
+    </ul>
+
+    <button @onclick="AddRoles" class="btn btn-success">Update Permissions</button>
+}
+
+
+@code {
+
+    [Parameter]
+    public string UserName { get; set; }
+
+    List<UserRolesResponse> response = new();
+    ApplicationUser User; 
+    protected override async Task OnInitializedAsync()
+    {
+        var roles = roleManager.Roles.ToList();
+        User = await userManager.FindByEmailAsync(UserName);
+        foreach (var role in roles)
+        {
+            var presp = new UserRolesResponse();
+            presp.UserName = UserName;
+            presp.RoleId = role.Id;
+            presp.RoleName= role.Name;
+
+            presp.Selected = await userManager.IsInRoleAsync(User, role.Name);
+            response.Add(presp);
+        }
+
+    }
+
+
+    private async void AddRoles()
+    {
+        foreach (var resp in response)
+        {
+            var fromdb = await userManager.IsInRoleAsync(User,resp.RoleName);
+
+            if (resp.Selected)
+            {
+                if (!fromdb)
+                {
+                    await userManager.AddToRoleAsync(User,resp.RoleName);
+                }
+
+            }
+            else
+            {
+                if (fromdb)
+                {
+                    await userManager.RemoveFromRoleAsync(User, resp.RoleName);
+                }
+            }
+        }
+
+        Navigation.NavigateTo("/users", true);
+    }
+
+
+
+
+}

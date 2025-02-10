@@ -1,49 +1,63 @@
-﻿
+﻿@layout DashboardLayouts;
 
 <style>
     .layout-container {
-        display: flex;
-        height: 100vh;
+    display: flex;
+    height: 100vh;
     }
 
     .sidebar {
-        background: #f8f9fa;
-        width: 250px;
-        padding: 15px;
-        transition: width 0.3s ease;
-        overflow-y: auto;
+    background: #f8f9fa;
+    width: 250px;
+   
+    transition: width 0.3s ease;
+    overflow-y: auto;
     }
 
     .content {
-        flex-grow: 1;
-        padding: 20px;
-        overflow-y: auto;
+    flex-grow: 1;
+    padding: 20px;
+    overflow-y: auto;
     }
 
     .nav-link {
-        font-weight: 500;
-        color: #333;
-        display: block;
-        padding: 10px;
-        text-decoration: none;
-        cursor: pointer;
+    font-weight: 500;
+    color: #333;
+    display: block;
+    padding: 10px;
+    text-decoration: none;
+    cursor: pointer;
     }
 
-        .nav-link:hover {
-            background-color: #e9ecef;
-            border-radius: 5px;
-        }
+    .nav-link:hover {
+    background-color: #e9ecef;
+    border-radius: 5px;
+    }
 
     .submenu {
-        list-style: none;
-        padding-left: 15px;
-        margin: 0;
-        display: none;
+    list-style: none;
+    padding-left: 15px;
+    margin: 0;
+    display: none;
     }
 
-        .submenu.show {
-            display: block;
-        }
+    .submenu.show {
+    display: block;
+    }
+
+    .report-container {
+    flex-grow: 1;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    }
+
+    iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    }
 </style>
 
 <div class="layout-container">
@@ -63,7 +77,7 @@
                             @foreach (var subItem in item.SubItems)
                             {
                                 <li>
-                                    <a class="nav-link" href="javascript:void(0)" @onclick="() => LoadContent(subItem.Url)">
+                                    <a class="nav-link" href="javascript:void(0)" @onclick="() => LoadContent(subItem)">
                                         @subItem.Title
                                     </a>
                                 </li>
@@ -72,7 +86,7 @@
                     }
                     else
                     {
-                        <a class="nav-link" href="javascript:void(0)" @onclick="() => LoadContent(item.Url)">
+                        <a class="nav-link" href="javascript:void(0)" @onclick="() => LoadContent(item)">
                             @item.Title
                         </a>
                     }
@@ -80,50 +94,65 @@
             }
         </ul>
     </nav>
+
+
 </div>
 
-
 @code {
-    private RenderFragment? CurrentContent { get; set; }
 
     private List<MenuItem> menuItems = new()
     {
-        new MenuItem("Home", "home"),
-        new MenuItem("Submenu Links", "#", new List<MenuItem>
+        new MenuItem(12,"Home", "https://app.powerbi.com/view?r=some_report_id_1"),
+        new MenuItem(13,"Sales Reports", "#", new List<MenuItem>
         {
-            new MenuItem("Page 1", "page1"),
-            new MenuItem("Page 2", "page2"),
-            new MenuItem("Page 3", "page3")
+            new MenuItem(15,"Sales Overview", "https://app.powerbi.com/view?r=some_report_id_2"),
+            new MenuItem(14,"Quarterly Sales", "https://app.powerbi.com/view?r=some_report_id_3")
         }),
-        new MenuItem("More Menus", "#", new List<MenuItem>
-        {
-            new MenuItem("Page 4", "page4"),
-            new MenuItem("Page 5", "page5"),
-            new MenuItem("Page 6", "page6")
-        }),
-        new MenuItem("Demo Link", "demo"),
-        new MenuItem("Another Link", "another"),
+        new MenuItem(43,"Customer Insights", "https://app.powerbi.com/view?r=some_report_id_4"),
+        new MenuItem(67,"Marketing Analytics", "https://app.powerbi.com/view?r=some_report_id_5")
     };
 
-    private void ToggleSubmenu(MenuItem item)
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+
+        }
+        catch (Exception ex)
+        {
+            throw ex;   
+        }
+    }
+
+    private async Task ToggleSubmenu(MenuItem item)
     {
         item.IsExpanded = !item.IsExpanded;
     }
 
-    private void LoadContent(string page)
+    private async Task LoadContent(MenuItem menuItem)
     {
-        
+        if(menuItem != null)
+        {
+            _navigation.NavigateTo($"/report/{menuItem.ReportID.ToString()}");
+        }
     }
 
     public class MenuItem
     {
+        public long ReportID { get; set; } 
         public string Title { get; set; }
         public string Url { get; set; }
         public List<MenuItem>? SubItems { get; set; }
         public bool IsExpanded { get; set; }
 
-        public MenuItem(string title, string url, List<MenuItem>? subItems = null)
+        public MenuItem(long reportID,string title, string url, List<MenuItem>? subItems = null)
         {
+            ReportID = reportID;
             Title = title;
             Url = url;
             SubItems = subItems;

@@ -1,0 +1,51 @@
+﻿@page "/report"
+@page "/report/{reportID}"
+@layout DashboardLayouts;
+
+<div>
+    @if (!string.IsNullOrEmpty(CurrentReportUrl))
+    {
+        <iframe  width="700" height="1000"  src="@CurrentReportUrl"></iframe>
+    }
+    else
+    {
+        <p>Select a report to view</p>
+    }
+</div>
+
+
+@code {
+
+    [Parameter] public string reportID { get; set; } = string.Empty;
+
+    private string CurrentReportUrl = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+
+    }
+
+    protected async override Task OnParametersSetAsync()
+    {
+        await LoadData();
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(this.reportID))
+            {
+                CurrentReportUrl = $"https://app.powerbi.com/view?r=some_report_id_{this.reportID}";
+            }
+        }
+        catch (Exception ex)
+        {
+            throw ex;
+        }
+    }
+
+
+
+}

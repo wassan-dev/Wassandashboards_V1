@@ -2,8 +2,8 @@
 @page "/report/{reportID}"
 @layout DashboardLayouts;
 
-<div>
-    @if (!string.IsNullOrEmpty(CurrentReportUrl))
+<div style="width:1300px;height:800px">
+    @if (!string.IsNullOrEmpty(this.CurrentReportUrl))
     {
         <iframe  width="700" height="1000"  src="@CurrentReportUrl"></iframe>
     }
@@ -37,7 +37,7 @@
         {
             if (!string.IsNullOrEmpty(this.reportID))
             {
-                CurrentReportUrl = $"https://app.powerbi.com/view?r=some_report_id_{this.reportID}";
+                this.CurrentReportUrl = "https://app.powerbi.com/view?r=eyJrIjoiMjk4OTUxMGUtYjBjMS00YWEyLWEwZmUtMTVkNGI0M2EwZWQxIiwidCI6IjQ5NTM2MmE3LTQxMjItNDQ0OC1iNGU2LTIxYzQzZTRiZjRmZCJ9";
             }
         }
         catch (Exception ex)

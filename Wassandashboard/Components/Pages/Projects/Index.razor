@@ -95,13 +95,18 @@
                                 @bind-value="linkInputs[0].Link" />
 
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="visibility0"
-                                    @bind-value="linkInputs[0].Visibility" @oninput="(e)=>TogglePivateProjects(0,e)" />
+                                    <input class="form-check-input" type="radio" name="visibility_@(0)"
+                                           value="@ProjectVisibility.Public"
+                                           checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Public)"
+                                           @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Public)" />
                                     <label class="form-check-label">Public</label>
                                 </div>
+
                                 <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="visibility0"
-                                    @bind-value="linkInputs[0].Visibility" @oninput="(e)=>TogglePivateProjects(0,e)" />
+                                    <input class="form-check-input" type="radio" name="visibility_@(0)"
+                                           value="@ProjectVisibility.Private"
+                                           checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Private)"
+                                           @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Private)" />
                                     <label class="form-check-label">Private</label>
                                 </div>
                             </div>

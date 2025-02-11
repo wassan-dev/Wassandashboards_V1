@@ -5,6 +5,7 @@
 @using Wassandashboard.Data.Entities
 @using Wassandashboard.Data
 @using Wassandashboard.Data.Models.Dto
+@using static Wassandashboard.Data.Models.Enums.CommonEnums
 @inject IJSRuntime JSRuntime
 @inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
 
@@ -56,72 +57,104 @@
 @if (isEditModalOpen)
 {
     <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Project: @selectedProject?.Name</h5>
                     <button type="button" class="btn-close" @onclick="CloseEditModal"></button>
                 </div>
                 <div class="modal-body">
-
-                    <div class="mb-4">
-                        <label class="fw-bold text-primary">Select Project Type:</label>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="singleProject"
-                            @bind="@this.isSingleProject" @oninput="ToggleSingleProject" />
-                            <label class="form-check-label text-dark fw-medium" for="singleProject">Single Project</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="checkbox" id="multipleProjects"
-                            @bind="@this.isMultipleProjects" @oninput="ToggleMultipleProjects" />
-                            <label class="form-check-label text-dark fw-medium" for="multipleProjects">Multiple Projects</label>
-                        </div>
-                    </div>
-
-                    @if (isSingleProject)
+                    @if (isLoading)
                     {
-                        <div class="input-group mb-3 shadow-sm rounded">
-                            <input type="text" class="form-control border-primary" placeholder="Enter project link"
-                            @bind="linkInputs[0].Link" />
+                        <div class="text-center my-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
                         </div>
                     }
-                    else if (isMultipleProjects)
+                    else
                     {
+                        <div class="mb-4">
+                            <label class="fw-bold text-primary">Select Project Type:</label>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="singleProject"
+                                @bind="@this.isSingleProject" @oninput="ToggleSingleProject" />
+                                <label class="form-check-label text-dark fw-medium" for="singleProject">Single Project</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="checkbox" id="multipleProjects"
+                                @bind="@this.isMultipleProjects" @oninput="ToggleMultipleProjects" />
+                                <label class="form-check-label text-dark fw-medium" for="multipleProjects">Multiple Projects</label>
+                            </div>
+                        </div>
 
-                        @for (int i = 0; i < linkInputs.Count(); i++)
+                        @if (isSingleProject)
                         {
-                            var index = i;
-                            <!-- Capture i properly -->
-                            <div class="input-group mb-2 shadow-sm rounded">
-                                <input type="text" class="form-control border-secondary" placeholder="Project Label"
-                                value="@linkInputs[index].Label"
-                                @oninput="e => UpdateProjectLabel(index, e.Value.ToString())" />
+                            <div class="input-group mb-3 shadow-sm rounded">
+                                <input type="text" class="form-control border-primary" placeholder="Enter project link"
+                                @bind-value="linkInputs[0].Link" />
 
-                                <input type="text" class="form-control border-secondary" placeholder="Enter link"
-                                value="@linkInputs[index].Link"
-                                @oninput="e => UpdateProjectLink(index, e.Value.ToString())" />
-
-                                <button class="btn btn-success px-3" type="button" @onclick="AddNewLink">+</button>
-                                @if (linkInputs.Count() > 1)
-                                {
-                                    <button class="btn btn-danger px-3" type="button" @onclick="() => RemoveLink(index)">-</button>
-                                }
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="visibility0"
+                                    @bind-value="linkInputs[0].Visibility" @oninput="(e)=>TogglePivateProjects(0,e)" />
+                                    <label class="form-check-label">Public</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="visibility0"
+                                    @bind-value="linkInputs[0].Visibility" @oninput="(e)=>TogglePivateProjects(0,e)" />
+                                    <label class="form-check-label">Private</label>
+                                </div>
                             </div>
                         }
+                        else if (isMultipleProjects)
+                        {
+                            @for (int i = 0; i < linkInputs.Count; i++)
+                            {
+                                var index = i;
+                                <div class="input-group mb-2 shadow-sm rounded">
+                                    <input type="text" class="form-control border-secondary" placeholder="Project Label"
+                                    value="@linkInputs[index].Label"
+                                    @oninput="e => UpdateProjectLabel(index, e.Value.ToString())" />
 
+                                    <input type="text" class="form-control border-secondary" placeholder="Enter link"
+                                    value="@linkInputs[index].Link"
+                                    @oninput="e => UpdateProjectLink(index, e.Value.ToString())" />
+
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="visibility_@(index)"
+                                               value="@ProjectVisibility.Public"
+                                               checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Public)"
+                                               @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Public)" />
+                                        <label class="form-check-label">Public</label>
+                                    </div>
+
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="visibility_@(index)"
+                                               value="@ProjectVisibility.Private"
+                                               checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Private)"
+                                               @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Private)" />
+                                        <label class="form-check-label">Private</label>
+                                    </div>
+
+
+                                    <button class="btn btn-success px-3" type="button" @onclick="AddNewLink">+</button>
+                                    @if (linkInputs.Count() > 1)
+                                    {
+                                        <button class="btn btn-danger px-3" type="button" @onclick="() => RemoveLink(index)">-</button>
+                                    }
+                                </div>
+                            }
+                        }
                     }
-
                 </div>
-
                 <div class="modal-footer">
-                    <button class="btn btn-primary" @onclick="SaveProjectChanges">Save</button>
-                    <button class="btn btn-secondary" @onclick="CloseEditModal">Close</button>
+                    <button class="btn btn-primary" @onclick="SaveProjectChanges" disabled="@(isLoading)">Save</button>
+                    <button class="btn btn-secondary" @onclick="CloseEditModal" disabled="@(isLoading)">Close</button>
                 </div>
             </div>
         </div>
     </div>
 }
-
 
 
 @if (isViewModalOpen)
@@ -138,10 +171,19 @@
 
                 <!-- Modal Body -->
                 <div class="modal-body p-4">
-                    @if (selectedProject != null && selectedProject.ProjectLinks != null && selectedProject.ProjectLinks.Any())
+                    @if (isLoading)
+                    {
+                        <!-- Loading Spinner -->
+                        <div class="text-center my-3">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    }
+                    else if (selectedProject != null && selectedProject.ProjectLinksData != null && selectedProject.ProjectLinksData.Any())
                     {
                         <ul class="list-group">
-                            @foreach (var link in selectedProject.ProjectLinks)
+                            @foreach (var link in selectedProject.ProjectLinksData)
                             {
                                 <li class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light rounded mb-2">
                                     <div class="text-secondary">
@@ -166,7 +208,6 @@
 }
 
 
-
 @code {
 
     #region Parameters
@@ -175,16 +216,17 @@
 
     #region Fields
     string universalSearch = "";
+    private bool isLoading = false;
     List<ProjectsGridDTO> ProjectsList = new List<ProjectsGridDTO>();
     List<ProjectsGridDTO> Projects = new List<ProjectsGridDTO>();
     bool isEditModalOpen = false;
     ProjectsGridDTO? selectedProject;
-    private List<ProjectLinks> linkInputs = new List<ProjectLinks> { new ProjectLinks() };
+    private List<ProjectLinksData> linkInputs = new List<ProjectLinksData> { new ProjectLinksData() };
     private bool isSingleProject = false;
     private bool isMultipleProjects = false;
     private string singleProjectLink = string.Empty;
     private bool isViewModalOpen = false;
-
+    private ProjectVisibility selectedVisibility;
     #endregion
 
     #region Lifecycle Methods
@@ -194,18 +236,18 @@
 
         var projects = await context.Projects.ToListAsync(); // Fetch data asynchronously
 
-        if(projects != null && projects.Any())
+        if (projects != null && projects.Any())
         {
-            foreach(var data in projects)
+            foreach (var data in projects)
             {
-                if(data != null)
+                if (data != null)
                 {
-                     this.Projects.Add(new ProjectsGridDTO
-            {
-                Id= data.Id,
-                Name =data.Name,
-               
-            });
+                    this.Projects.Add(new ProjectsGridDTO
+                        {
+                            Id = data.Id,
+                            Name = data.Name,
+
+                        });
                 }
             }
         }
@@ -221,19 +263,40 @@
 
 
     #region Modal Methods
-    private void OpenEditModal(ProjectsGridDTO project)
-    {
-        if (project != null)
-        {
-            linkInputs = (project.ProjectLinks == null || !project.ProjectLinks.Any())
-                ? new List<ProjectLinks> { new ProjectLinks { Label = string.Empty, Link = string.Empty } }
-                : new List<ProjectLinks>(project.ProjectLinks);
 
-            isSingleProject = linkInputs.Count == 1;
-            isMultipleProjects = linkInputs.Count > 1;
-            selectedProject = project;
-            isEditModalOpen = true;
+    private async void OpenEditModal(ProjectsGridDTO project)
+    {
+        if (project == null) return;
+
+        isLoading = true; // Show spinner
+        await InvokeAsync(StateHasChanged);
+
+        using var context = DbFactory.CreateDbContext();
+
+        var existedData = await context.ProjectLinks
+                                       .Where(pl => pl.ProjectId == project.Id) // Fetch only relevant links
+                                       .ToListAsync();
+
+        linkInputs = existedData?.Select(pl => new ProjectLinksData
+            {
+                Label = pl.ProjectName,
+                Link = pl.ProjectLink,
+                Visibility = pl.IsPrivateOrPublic
+            }).ToList() ?? new List<ProjectLinksData>() { new ProjectLinksData() { Label = string.Empty,Link =  string.Empty} }; // Ensure linkInputs is always initialized
+
+        if(linkInputs.Count() == 0)
+        {
+            linkInputs = new List<ProjectLinksData>() { new ProjectLinksData() { Label = string.Empty, Link = string.Empty } }; // Ensure linkInputs is always initialized
         }
+        var firstLink = existedData.FirstOrDefault();
+        isSingleProject = !existedData.Any() ? false : firstLink?.IsSingleLink ?? false;
+        isMultipleProjects = !existedData.Any() ? false : !isSingleProject; // Fix: Ensure the right toggle is selected
+
+        selectedProject = project;
+        isEditModalOpen = true;
+        isLoading = false; // Hide spinner
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private void CloseEditModal()
@@ -243,10 +306,33 @@
     }
 
 
-    private void OpenViewModal(ProjectsGridDTO project)
+    private async void OpenViewModal(ProjectsGridDTO project)
     {
+        if (project == null) return;
+
+        isLoading = true; // Show spinner
+        await InvokeAsync(StateHasChanged);
+
+        using var context = DbFactory.CreateDbContext();
+
+        // Fetch project links related to the selected project
+        var projectLinks = await context.ProjectLinks
+                                        .Where(pl => pl.ProjectId == project.Id)
+                                        .Select(pl => new ProjectLinksData
+                                            {
+                                                Label = pl.ProjectName,
+                                                Link = pl.ProjectLink
+                                            })
+                                        .ToListAsync();
+
+        // Assign the fetched links to the selected project
+        project.ProjectLinksData = projectLinks ?? new List<ProjectLinksData>();
+
         selectedProject = project;
         isViewModalOpen = true;
+        isLoading = false; // Hide spinner
+
+        await InvokeAsync(StateHasChanged);
     }
 
     private void CloseViewModal()
@@ -262,6 +348,7 @@
     {
         isSingleProject = (bool)e.Value;
         isMultipleProjects = false;
+      
         await InvokeAsync(StateHasChanged);
     }
 
@@ -269,6 +356,15 @@
     {
         isMultipleProjects = (bool)e.Value;
         isSingleProject = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task TogglePivateProjects(int index, ChangeEventArgs e)
+    {
+        if(e.Value != null)
+        {
+            linkInputs[index].Visibility = Convert.ToInt32(e.Value);
+        }
         await InvokeAsync(StateHasChanged);
     }
     #endregion
@@ -292,7 +388,7 @@
 
     private void AddNewLink()
     {
-        linkInputs.Add(new ProjectLinks());
+        linkInputs.Add(new ProjectLinksData());
     }
 
     private void RemoveLink(int index)
@@ -303,30 +399,96 @@
         }
     }
 
-    private void SaveProjectChanges()
+    private async Task SaveProjectChanges()
     {
-        if (selectedProject != null)
-        {
-            selectedProject.ProjectLinks = new List<ProjectLinks>();
-            if (isSingleProject)
-            {
-                selectedProject.ProjectLinks.Add(new ProjectLinks
-                    {
-                        Label = selectedProject.Name,
-                        Link = linkInputs.First().Link
-                    });
-            }
-            else
-            {
-                selectedProject.ProjectLinks.AddRange(linkInputs);
-            }
+        if (selectedProject == null || linkInputs == null || !linkInputs.Any())
+            return;
 
-            isEditModalOpen = false;
-            linkInputs.Clear();
-            isMultipleProjects = false;
-            isSingleProject = false;
+        try
+        {
+            using var context = DbFactory.CreateDbContext();
+
+            // Delete existing project links before inserting new ones
+            await DeleteExistingProjectLinks(context, selectedProject.Id);
+
+            // Prepare and save new project links
+            await SaveNewProjectLinks(context);
+
+            await context.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving project changes: {ex.Message}");
+        }
+        finally
+        {
+            ResetState();
         }
     }
+
+    private async Task DeleteExistingProjectLinks(DashboardDbContext context, long projectId)
+    {
+        await context.ProjectLinks
+                     .Where(pl => pl.ProjectId == projectId)
+                     .ExecuteDeleteAsync(); // No argument needed
+    }
+
+
+    private async Task SaveNewProjectLinks(DashboardDbContext context)
+    {
+        var projectLinks = new List<ProjectLinks>();
+        selectedProject.ProjectLinksData = new List<ProjectLinksData>();
+
+        if (isSingleProject)
+        {
+            var firstLink = linkInputs.FirstOrDefault();
+            if (firstLink == null) return;
+
+            selectedProject.ProjectLinksData.Add(new ProjectLinksData
+                {
+                    Label = selectedProject.Name,
+                    Link = firstLink.Link
+                });
+
+            projectLinks.Add(new ProjectLinks
+                {
+                    IsSingleLink = true,
+                    ProjectLink = firstLink.Link,
+                    ProjectName = selectedProject.Name,
+                    ProjectId = selectedProject.Id,
+                    IsPrivateOrPublic = firstLink.Visibility
+                });
+        }
+        else
+        {
+            projectLinks.AddRange(linkInputs
+                .Where(data => data != null)
+                .Select(data => new ProjectLinks
+                    {
+                        IsSingleLink = false,
+                        ProjectLink = data.Link,
+                        ProjectName = data.Label,
+                        ProjectId = selectedProject.Id,
+                        IsPrivateOrPublic = data.Visibility
+                    }));
+
+            selectedProject.ProjectLinksData.AddRange(linkInputs);
+        }
+
+        if (projectLinks.Any())
+        {
+            context.ProjectLinks.AddRange(projectLinks);
+        }
+    }
+
+    private void ResetState()
+    {
+        isEditModalOpen = false;
+        linkInputs.Clear();
+        isMultipleProjects = false;
+        isSingleProject = false;
+    }
+
     #endregion
 
     #region Export Methods
@@ -349,7 +511,7 @@
         var fileContents = _excel.GenerateExcelFile(data, columnHeaders, item => new object[]
         {
             item.Name,
-            
+
         });
 
         using (var stream = new MemoryStream(fileContents))
@@ -362,10 +524,16 @@
     #endregion
 
     #region Models
-    public class ProjectLinks
+    public class ProjectLinksData
     {
         public string Label { get; set; } = string.Empty;
         public string Link { get; set; } = string.Empty;
+        public int Visibility { get; set; } = 0;
     }
     #endregion
+
+    private void UpdateVisibility(int index, ProjectVisibility visibility)
+    {
+        linkInputs[index].Visibility = (int)visibility;
+    }
 }

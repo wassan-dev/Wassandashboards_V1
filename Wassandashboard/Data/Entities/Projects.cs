@@ -38,7 +38,8 @@ namespace Wassandashboard.Data.Entities
         public int Status { get; set; }
         [NotMapped]
         public string StatusText => Status == 1 ? "Live" : "Closed";
-
+        // Many-to-Many Relationship
+        public List<ProjectRegions> ProjectRegions { get; set; } = new();
         //public List<ProjectLinks> ProjectLinks { get; set; } = new List<ProjectLinks>();
 
     }

@@ -8,6 +8,6 @@ namespace Wassandashboard.Data.Models.Dto
         public long Id { get; set; }    
 
         public string Name { get; set; } = string.Empty;
-        public List<ProjectLinks> ProjectLinks { get; set; } = new List<ProjectLinks>();
+        public List<ProjectLinksData> ProjectLinksData { get; set; } = new List<ProjectLinksData>();
     }
 }

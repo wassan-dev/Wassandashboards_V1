@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Wassandashboard.Data;
 
@@ -11,9 +12,11 @@ using Wassandashboard.Data;
 namespace Wassandashboard.Migrations
 {
     [DbContext(typeof(DashboardDbContext))]
-    partial class DashboardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250210151328_intial_4")]
+    partial class intial_4
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -39,9 +42,6 @@ namespace Wassandashboard.Migrations
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("tinyint(1)");
 
-                    b.Property<int>("IsPrivateOrPublic")
-                        .HasColumnType("int");
-
                     b.Property<bool>("IsSingleLink")
                         .HasColumnType("tinyint(1)");
 
@@ -65,44 +65,6 @@ namespace Wassandashboard.Migrations
                     b.HasIndex("ProjectId");
 
                     b.ToTable("ProjectLinks");
-                });
-
-            modelBuilder.Entity("Wassandashboard.Data.Entities.ProjectRegions", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<DateTime?>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("CreatedBy")
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<long>("ProjectId")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("RegionId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UpdatedBy")
-                        .HasColumnType("longtext");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProjectId");
-
-                    b.HasIndex("RegionId");
-
-                    b.ToTable("ProjectRegions");
                 });
 
             modelBuilder.Entity("Wassandashboard.Data.Entities.Projects", b =>
@@ -253,25 +215,6 @@ namespace Wassandashboard.Migrations
                     b.Navigation("projects");
                 });
 
-            modelBuilder.Entity("Wassandashboard.Data.Entities.ProjectRegions", b =>
-                {
-                    b.HasOne("Wassandashboard.Data.Entities.Projects", "Project")
-                        .WithMany("ProjectRegions")
-                        .HasForeignKey("ProjectId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Wassandashboard.Data.Entities.Regions", "Region")
-                        .WithMany("ProjectRegions")
-                        .HasForeignKey("RegionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Project");
-
-                    b.Navigation("Region");
-                });
-
             modelBuilder.Entity("Wassandashboard.Data.Entities.UserProjects", b =>
                 {
                     b.HasOne("Wassandashboard.Data.Entities.Projects", "projects")
@@ -281,16 +224,6 @@ namespace Wassandashboard.Migrations
                         .IsRequired();
 
                     b.Navigation("projects");
-                });
-
-            modelBuilder.Entity("Wassandashboard.Data.Entities.Projects", b =>
-                {
-                    b.Navigation("ProjectRegions");
-                });
-
-            modelBuilder.Entity("Wassandashboard.Data.Entities.Regions", b =>
-                {
-                    b.Navigation("ProjectRegions");
                 });
 #pragma warning restore 612, 618
         }

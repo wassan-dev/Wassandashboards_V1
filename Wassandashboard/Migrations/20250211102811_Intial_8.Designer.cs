@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Wassandashboard.Data;
 
@@ -11,9 +12,11 @@ using Wassandashboard.Data;
 namespace Wassandashboard.Migrations
 {
     [DbContext(typeof(DashboardDbContext))]
-    partial class DashboardDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250211102811_Intial_8")]
+    partial class Intial_8
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

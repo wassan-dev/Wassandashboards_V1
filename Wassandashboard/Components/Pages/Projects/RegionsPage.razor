@@ -1,0 +1,327 @@
+﻿@page "/regions"
+@inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
+
+<h3 class="text-center mb-4" style="font-size: 24px; color: #3C3C3C;">Regions</h3>
+
+<PageTitle>Regions</PageTitle>
+
+<div class="card p-3 mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h3 class="mb-0">Regions</h3>
+
+        <div class="d-flex align-items-center gap-3 mb-3">
+            <button class="btn btn-success btn-sm d-flex align-items-center gap-2" @onclick=@(e => ShowCreateRegionModal())>
+                <i class="fa fa-plus"></i> Create Region
+            </button>
+        </div>
+    </div>
+
+    <input type="search" @bind="universalSearch" @bind:event="oninput" placeholder="Search..." class="form-control mb-2 mt-2 w-25" />
+
+    <div class="grid">
+        <QuickGrid class="table table-responsive" Items="FilteredData.AsQueryable()">
+
+            <PropertyColumn class="text-nowrap" Property="Regions => Regions.RegionName" Title="Region Name" />
+
+            <TemplateColumn Title="Manage Projects">
+                <div>
+                    @if (context is Data.Entities.Regions region)
+                    {
+                        <button class="btn btn-primary btn-sm" @onclick="() => OpenManageProjectsModal(region)">
+                            Manage Projects
+                        </button>
+                    }
+
+                </div>
+
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+</div>
+
+<!-- Create Region Modal -->
+@if (isRegionModalOpen)
+{
+    <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Region</h5>
+                    <button type="button" class="btn-close" @onclick="CloseRegionModal"></button>
+                </div>
+                <div class="modal-body">
+
+                    @if (hasError)
+                    {
+                        <div class="alert alert-danger text-center">Please enter at least one region name before creating!</div>
+                    }
+
+                    @if (isSuccess)
+                    {
+                        <div class="alert alert-success text-center">Regions created successfully!</div>
+                    }
+
+                    @if (isFailure)
+                    {
+                        <div class="alert alert-danger text-center">Failed to create regions. Please try again.</div>
+                    }
+
+                    @for (int i = 0; i < RegionsList.Count; i++)
+                    {
+                        var index = i;
+                        <div class="input-group mb-3 shadow-sm rounded">
+                            <input type="text" class="form-control border-secondary" placeholder="Enter region name"
+                            value="@RegionsList[index]"
+                            @oninput="e => UpdateRegion(index, e.Value.ToString())" />
+
+                            <button class="btn btn-success px-3" type="button" @onclick="AddRegion">+</button>
+
+                            @if (RegionsList.Count > 1)
+                            {
+                                <button class="btn btn-danger px-3" type="button" @onclick="() => RemoveRegion(index)">-</button>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary" @onclick="CreateRegions" disabled="@(!RegionsList.Any() || isLoading)">
+                        @if (isLoading)
+                        {
+                            <div class="spinner-border text-light" role="status"></div>
+                        }
+                        else
+                        {
+                            <span>Create</span>
+                        }
+                    </button>
+                    <button class="btn btn-secondary" @onclick="CloseRegionModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+
+
+<!-- Manage Projects Modal -->
+@if (isManageProjectsModalOpen)
+{
+    <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage Projects for @SelectedRegion?.RegionName</h5>
+                    <button type="button" class="btn-close" @onclick="CloseManageProjectsModal"></button>
+                </div>
+                <div class="modal-body">
+                    <ul class="list-group">
+                        @if(AllProjects != null && AllProjects.Any()){
+                            @foreach (var project in AllProjects)
+                            {
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    @project.Name
+                                    <input type="checkbox" checked="@AssignedProjectIds.Contains(project.Id)"
+                                    @onchange="(e) => ToggleProjectAssignment(project.Id, (bool)e.Value!)" />
+
+                                </li>
+                            }
+                        }
+                        else
+                        {
+                            <div class="mt-3">
+                                No Data Found!
+                            </div>
+                        }
+                    </ul>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-primary" @onclick="SaveProjectAssignments">Save</button>
+                    <button class="btn btn-secondary" @onclick="CloseManageProjectsModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    string universalSearch = "";
+    private List<string> RegionsList = new List<string> { "" };
+    private bool hasError = false;
+    private bool isSuccess = false;
+    private bool isFailure = false;
+    private bool isLoading = false;
+    private bool isRegionModalOpen = false;
+    private bool isManageProjectsModalOpen = false;
+    private List<Data.Entities.Regions> RegionsGridData = new List<Data.Entities.Regions>();
+    private HashSet<long> AssignedRegionIds = new HashSet<long>();
+    private Data.Entities.Projects SelectedProject;
+
+
+    private List<Data.Entities.Projects> AllProjects = new();
+    private HashSet<long> AssignedProjectIds = new();
+    private Data.Entities.Regions SelectedRegion;
+
+
+    #region Computed Properties
+    List<Data.Entities.Regions> FilteredData => string.IsNullOrEmpty(universalSearch)
+        ? RegionsGridData ?? new List<Data.Entities.Regions>()
+        : RegionsGridData?.Where(c => c.RegionName.ToLower().Contains(universalSearch.ToLower())).ToList() ?? new List<Data.Entities.Regions>();
+    #endregion
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        using var context = DbFactory.CreateDbContext();
+
+        RegionsGridData = await context.Regions.ToListAsync();
+        AllProjects = await context.Projects.ToListAsync();
+    }
+
+    private void ShowCreateRegionModal()
+    {
+        isRegionModalOpen = true;
+    }
+
+    private void CloseRegionModal()
+    {
+        isRegionModalOpen = false;
+        hasError = false;
+        isSuccess = false;
+        isFailure = false;
+    }
+
+    private async Task AddRegion()
+    {
+        await Task.Delay(100);
+        RegionsList.Add("");
+    }
+
+    private async Task RemoveRegion(int index)
+    {
+        if (RegionsList.Count() > 1)
+        {
+            await Task.Delay(100);
+            RegionsList.RemoveAt(index);
+        }
+    }
+
+    private async Task UpdateRegion(int index, string value)
+    {
+        await Task.Delay(50);
+        RegionsList[index] = value;
+    }
+
+    private async Task CreateRegions()
+    {
+        isLoading = true;
+        isSuccess = false;
+        isFailure = false;
+
+        if (RegionsList.Any(region => string.IsNullOrWhiteSpace(region)))
+        {
+            hasError = true;
+            isLoading = false;
+        }
+        else
+        {
+            hasError = false;
+            try
+            {
+                using var context = DbFactory.CreateDbContext();
+
+                foreach (var regionName in RegionsList)
+                {
+                    context.Regions.Add(new Data.Entities.Regions
+                        {
+                            RegionName = regionName
+                        });
+                }
+
+                await context.SaveChangesAsync();
+
+                isSuccess = true;
+                await LoadData(); // Refresh grid
+            }
+            catch (Exception ex)
+            {
+                isFailure = true;
+                Console.WriteLine($"Error: {ex.Message}");
+            }
+
+            isLoading = false;
+        }
+        isRegionModalOpen = false;
+    }
+
+    public void Dispose()
+    {
+        RegionsList.Clear();
+    }
+
+    private void ToggleProjectAssignment(long projectId, bool isChecked)
+    {
+        if (isChecked) AssignedProjectIds.Add(projectId);
+        else AssignedProjectIds.Remove(projectId);
+    }
+
+    private void CloseManageProjectsModal() => isManageProjectsModalOpen = false;
+
+    private async Task SaveProjectAssignments()
+    {
+        if (SelectedRegion == null)
+        {
+            // Handle error if SelectedRegion is null
+            Console.WriteLine("SelectedRegion is null.");
+            return;
+        }
+
+        if (AssignedProjectIds == null || !AssignedProjectIds.Any())
+        {
+            // Handle error if no projects are selected
+            Console.WriteLine("No projects selected.");
+            return;
+        }
+
+        using var context = DbFactory.CreateDbContext();
+
+        // Clear old assignments in the ProjectRegions table using ExecuteDeleteAsync
+        await context.ProjectRegions
+            .Where(pr => pr.RegionId == SelectedRegion.Id)
+            .ExecuteDeleteAsync(); // Deleting existing assignments for the selected region
+
+        // Add new assignments to the ProjectRegions table for each project
+        foreach (var projectId in AssignedProjectIds)
+        {
+            context.ProjectRegions.Add(new ProjectRegions
+                {
+                    ProjectId = projectId, // Use projectId from the list
+                    RegionId = SelectedRegion.Id // Assign the selected region
+                });
+        }
+
+        await context.SaveChangesAsync(); // Save the new assignments to the database
+        CloseManageProjectsModal(); // Close the modal after saving
+    }
+
+    private void OpenManageProjectsModal(Data.Entities.Regions region)
+    {
+        SelectedRegion = region; // Set the selected region first
+
+        using var context = DbFactory.CreateDbContext();
+
+        // Fetch the project assignments for the selected region from the ProjectRegions table
+        AssignedProjectIds = new HashSet<long>(
+            context.ProjectRegions.Where(pr => pr.RegionId == region.Id).Select(pr => pr.ProjectId)
+        );
+
+        isManageProjectsModalOpen = true; // Now open the modal
+    }
+
+
+
+}

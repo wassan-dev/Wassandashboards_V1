@@ -4,7 +4,7 @@ namespace Wassandashboard.Data.Entities
 {
     public class ProjectLinks : BaseEntity
     {
-        public string ProjectName { get; set; } = string.Empty;
+        public string ProjectReportName { get; set; } = string.Empty;
         public string ProjectLink {  get; set; } = string.Empty;
         public bool IsSingleLink { get; set; } = false;
         public int IsPrivateOrPublic { get; set; } 

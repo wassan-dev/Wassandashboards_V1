@@ -284,7 +284,7 @@
 
         linkInputs = existedData?.Select(pl => new ProjectLinksData
             {
-                Label = pl.ProjectName,
+                Label = pl.ProjectReportName,
                 Link = pl.ProjectLink,
                 Visibility = pl.IsPrivateOrPublic
             }).ToList() ?? new List<ProjectLinksData>() { new ProjectLinksData() { Label = string.Empty,Link =  string.Empty} }; // Ensure linkInputs is always initialized
@@ -325,7 +325,7 @@
                                         .Where(pl => pl.ProjectId == project.Id)
                                         .Select(pl => new ProjectLinksData
                                             {
-                                                Label = pl.ProjectName,
+                                                Label = pl.ProjectReportName,
                                                 Link = pl.ProjectLink
                                             })
                                         .ToListAsync();
@@ -459,7 +459,7 @@
                 {
                     IsSingleLink = true,
                     ProjectLink = firstLink.Link,
-                    ProjectName = selectedProject.Name,
+                    ProjectReportName = selectedProject.Name,
                     ProjectId = selectedProject.Id,
                     IsPrivateOrPublic = firstLink.Visibility
                 });
@@ -472,7 +472,7 @@
                     {
                         IsSingleLink = false,
                         ProjectLink = data.Link,
-                        ProjectName = data.Label,
+                        ProjectReportName = data.Label,
                         ProjectId = selectedProject.Id,
                         IsPrivateOrPublic = data.Visibility
                     }));

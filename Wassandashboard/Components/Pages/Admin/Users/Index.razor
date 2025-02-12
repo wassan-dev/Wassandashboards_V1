@@ -23,11 +23,11 @@
             <PropertyColumn Property="user =>user.Email " />
             <PropertyColumn Property="user =>user.EmailConfirmed" Title="Active" />
             <TemplateColumn class="text-nowrap" Context="user">
-                <button @onclick="@(e=>ShowNgos(user.Email))" class="btn btn-primary btn-sm w-100">Manage Projects</button>
+                <button @onclick="@(e=>ShowNgos(user.Email))" class="btn btn-primary btn-sm w-100">Manage Regions</button>
             </TemplateColumn>
-            <TemplateColumn class="text-nowrap" Context="user">
+           @*  <TemplateColumn class="text-nowrap" Context="user">
                 <button @onclick="@(e=>ShowRoles(user.Email))" class="btn btn-success btn-sm w-100">Manage Roles</button>
-            </TemplateColumn>
+            </TemplateColumn> *@
         </QuickGrid>
         <Paginator State="pagination" />
     </div>
@@ -49,7 +49,7 @@
     {
         var parameters = new ModalParameters();
         parameters.Add("UserName", UserName);
-        Modal.Show<ManageNgos>("Manage Projects", parameters: parameters);
+        Modal.Show<ManageNgos>("Manage Regions", parameters: parameters);
     }
     private void ShowRoles(string UserName)
     {

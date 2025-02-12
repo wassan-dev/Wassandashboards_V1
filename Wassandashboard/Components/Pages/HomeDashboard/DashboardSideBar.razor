@@ -1,4 +1,6 @@
-﻿@layout DashboardLayouts;
+﻿@using static Wassandashboard.Data.Models.Enums.CommonEnums
+
+@inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
 
 <style>
     .layout-container {
@@ -9,9 +11,9 @@
     .sidebar {
     background: #f8f9fa;
     width: 250px;
-   
     transition: width 0.3s ease;
     overflow-y: auto;
+    max-height: 100vh;
     }
 
     .content {
@@ -33,6 +35,13 @@
     background-color: #e9ecef;
     border-radius: 5px;
     }
+
+        .nav-link.active {
+            background-color: #007bff !important;
+            color: white !important;
+            border-radius: 5px;
+        }
+
 
     .submenu {
     list-style: none;
@@ -61,15 +70,17 @@
 </style>
 
 <div class="layout-container">
-    <!-- Sidebar Section -->
-    <nav class="sidebar card py-2 mb-4">
+    <!-- Sidebar Section with Bootstrap Scrollbar -->
+    <nav class="sidebar card py-2 mb-4 overflow-auto">
         <ul class="nav flex-column">
             @foreach (var item in menuItems)
             {
                 <li class="nav-item">
                     @if (item.SubItems?.Any() == true)
                     {
-                        <a href="javascript:void(0)" class="nav-link" @onclick="() => ToggleSubmenu(item)">
+                        <a href="javascript:void(0)"
+                           class="nav-link d-flex justify-content-between align-items-center @(selectedMenuItem == item ? "active" : "")"
+                           @onclick="() => ToggleSubmenu(item)">
                             @item.Title
                             <i class="bi small @(item.IsExpanded ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
                         </a>
@@ -77,7 +88,9 @@
                             @foreach (var subItem in item.SubItems)
                             {
                                 <li>
-                                    <a class="nav-link" href="javascript:void(0)" @onclick="() => LoadContent(subItem)">
+                                    <a class="nav-link @(selectedMenuItem == subItem ? "active" : "")"
+                                       href="javascript:void(0)"
+                                       @onclick="() => LoadContent(subItem)">
                                         @subItem.Title
                                     </a>
                                 </li>
@@ -86,12 +99,15 @@
                     }
                     else
                     {
-                        <a class="nav-link" href="javascript:void(0)" @onclick="() => LoadContent(item)">
+                        <a class="nav-link @(selectedMenuItem == item ? "active" : "")"
+                           href="javascript:void(0)"
+                           @onclick="() => LoadContent(item)">
                             @item.Title
                         </a>
                     }
                 </li>
             }
+
         </ul>
     </nav>
 
@@ -99,21 +115,22 @@
 </div>
 
 @code {
+    [Parameter] public string PrivateOrPublic { get; set; } = string.Empty;
 
-    private List<MenuItem> menuItems = new()
-    {
-        new MenuItem(12,"Home", "https://app.powerbi.com/view?r=some_report_id_1"),
-        new MenuItem(13,"Sales Reports", "#", new List<MenuItem>
-        {
-            new MenuItem(15,"Sales Overview", "https://app.powerbi.com/view?r=some_report_id_2"),
-            new MenuItem(14,"Quarterly Sales", "https://app.powerbi.com/view?r=some_report_id_3")
-        }),
-        new MenuItem(43,"Customer Insights", "https://app.powerbi.com/view?r=some_report_id_4"),
-        new MenuItem(67,"Marketing Analytics", "https://app.powerbi.com/view?r=some_report_id_5")
-    };
+    private MenuItem selectedMenuItem;
+
+
+    private List<ProjectLinks> privateReports = new List<ProjectLinks>();
+
+    private List<ProjectLinks> publicReports = new List<ProjectLinks>();
+
+    private List<MenuItem> privateMenuItems = new List<MenuItem>();
+
+    private List<MenuItem> menuItems = new List<MenuItem>();
 
     protected override async Task OnInitializedAsync()
     {
+
         await LoadData();
     }
 
@@ -121,11 +138,93 @@
     {
         try
         {
-
+            await LoadReports();
         }
         catch (Exception ex)
         {
             throw ex;   
+        }
+    }
+
+    private async Task LoadReports()
+    {
+        try
+        {
+            using var context = DbFactory.CreateDbContext();
+
+            var reports = await context.ProjectLinks.ToListAsync();
+
+            if (reports != null && reports.Any())
+            {
+                privateReports = reports
+                    .Where(x => x.IsPrivateOrPublic == (int)ProjectVisibility.Private)
+                    .ToList();
+
+                publicReports = reports
+                    .Where(x => x.IsPrivateOrPublic == (int)ProjectVisibility.Public)
+                    .ToList();
+
+                menuItems = new List<MenuItem>();
+
+
+                if (this.PrivateOrPublic == ProjectVisibility.Public.ToString())
+                {
+                    // Load and structure public reports
+                    await LoadReportMenu(publicReports, context, menuItems);
+
+                }
+                else if (this.PrivateOrPublic == ProjectVisibility.Private.ToString())
+                {
+                    await LoadReportMenu(privateReports, context, menuItems);
+                }
+
+               
+             
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading reports: {ex.Message}");
+        }
+    }
+
+    private async Task LoadReportMenu(List<ProjectLinks> reports, DashboardDbContext context, List<MenuItem> menuList)
+    {
+        if (reports == null || !reports.Any()) return;
+
+        // Group multiple project links by Project ID
+        var groupedProjects = reports
+            .Where(x => !x.IsSingleLink)
+            .GroupBy(x => x.ProjectId)
+            .ToDictionary(g => g.Key, g => g.ToList());
+
+        // Fetch all project names in one query
+        var projects = await context.Projects
+            .Where(p => groupedProjects.Keys.Contains(p.Id))
+            .ToDictionaryAsync(p => p.Id, p => p.Name);
+
+        foreach (var data in reports)
+        {
+            if (data != null)
+            {
+                if (data.IsSingleLink)
+                {
+                    // Directly add as a single item
+                    menuList.Add(new MenuItem(data.ProjectId, data.ProjectReportName, data.ProjectLink));
+                }
+                else if (groupedProjects.ContainsKey(data.ProjectId))
+                {
+                    var subItems = groupedProjects[data.ProjectId]
+                        .Select(x => new MenuItem(x.Id, x.ProjectReportName, x.ProjectLink))
+                        .ToList();
+
+                    // Get project name or default
+                    var projectName = projects.ContainsKey(data.ProjectId) ? projects[data.ProjectId] : "Unknown Project";
+
+                    // Add parent item with sub-items
+                    menuList.Add(new MenuItem(data.Id, projectName, "#", subItems));
+                }
+            }
         }
     }
 
@@ -136,9 +235,16 @@
 
     private async Task LoadContent(MenuItem menuItem)
     {
-        if(menuItem != null)
+        selectedMenuItem = menuItem; // Track the selected item
+        StateHasChanged(); // Force UI update
+
+        if (this.PrivateOrPublic == ProjectVisibility.Public.ToString())
         {
-            _navigation.NavigateTo($"/report/{menuItem.ReportID.ToString()}");
+            _navigation.NavigateTo($"/publicreport/{menuItem.ReportID}");
+        }
+        else if (this.PrivateOrPublic == ProjectVisibility.Private.ToString())
+        {
+            _navigation.NavigateTo($"/privatereport/{menuItem.ReportID}");
         }
     }
 

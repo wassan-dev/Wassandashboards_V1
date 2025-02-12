@@ -23,8 +23,8 @@
             <dt class="col-sm-2">Name</dt>
             <dd class="col-sm-10">@projects.Name</dd>
         </dl>
-       
-             
+
+
         <dl class="row">
             <dt class="col-sm-2">ContactNumber</dt>
             <dd class="col-sm-10">@projects.ContactNumber</dd>
@@ -33,7 +33,7 @@
             <dt class="col-sm-2">Email</dt>
             <dd class="col-sm-10">@projects.Email</dd>
         </dl>
-      
+
         <EditForm method="post" Model="projects" OnValidSubmit="DeleteOrganization" FormName="delete" Enhance>
             <button type="submit" class="btn btn-danger" disabled="@(projects is null)">Delete</button> |
             <a href="/projects">Back to List</a>
@@ -42,6 +42,9 @@
 </div>
 
 @code {
+
+
+
     Projects? projects;
 
     [SupplyParameterFromQuery]
@@ -61,8 +64,27 @@
     public async Task DeleteOrganization()
     {
         using var context = DbFactory.CreateDbContext();
-        context.Projects.Remove(projects!);
-        await context.SaveChangesAsync();
+
+        // Delete related entities using ExecuteDeleteAsync
+        await context.ProjectLinks
+            .Where(x => x.ProjectId == projects.Id)
+            .ExecuteDeleteAsync();
+
+        await context.ProjectRegions
+            .Where(x => x.ProjectId == projects.Id)
+            .ExecuteDeleteAsync();
+
+        await context.UserProjects
+            .Where(x => x.ProjectId == projects.Id)
+            .ExecuteDeleteAsync();
+
+        // Delete the project itself
+        await context.Projects
+            .Where(x => x.Id == projects.Id)
+            .ExecuteDeleteAsync();
+
+        // After deletion, navigate to the projects page
         NavigationManager.NavigateTo("/projects");
     }
+
 }

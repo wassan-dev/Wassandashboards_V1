@@ -1,0 +1,70 @@
+﻿@page "/publicreport"
+@page "/publicreport/{reportID}"
+@attribute [AllowAnonymous]
+@inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
+
+<div style="width: 1200px; height: 700px; margin-top: 63px; overflow: auto; border: 1px solid #ddd; padding: 10px;">
+    @if (IsLoading)
+    {
+        <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else if (!string.IsNullOrEmpty(CurrentReportUrl))
+    {
+        <iframe width="1000" height="1200" src="@CurrentReportUrl" style="border: none;"></iframe>
+    }
+    else
+    {
+        <p>Select a report to view</p>
+    }
+</div>
+
+@code {
+    [Parameter] public string reportID { get; set; } = string.Empty;
+    private string CurrentReportUrl = string.Empty;
+    private bool IsLoading = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IsLoading = true;
+        StateHasChanged();
+
+
+        await LoadData();
+
+        IsLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            if (!string.IsNullOrEmpty(reportID))
+            {
+                using var context = DbFactory.CreateDbContext();
+
+                var report = await context.ProjectLinks
+                    .FirstOrDefaultAsync(x => x.Id == Convert.ToInt64(reportID));
+
+                if (report != null)
+                {
+                    CurrentReportUrl = report.ProjectLink;
+                }
+                else
+                {
+                    Console.WriteLine("Report not found.");
+                    CurrentReportUrl = string.Empty;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"An error occurred: {ex.Message}");
+            CurrentReportUrl = string.Empty;
+        }
+    }
+}

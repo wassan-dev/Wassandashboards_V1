@@ -67,5 +67,7 @@ namespace Wassandashboard.Data
         public DbSet<Regions> Regions { get; set; }
         public DbSet<ProjectLinks> ProjectLinks { get; set; }
         public DbSet<ProjectRegions> ProjectRegions { get; set; }
+
+        public DbSet<ManageRegions> ManageRegions { get; set; }
     }
 }

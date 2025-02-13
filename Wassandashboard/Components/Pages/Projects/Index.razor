@@ -96,17 +96,17 @@
 
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="radio" name="visibility_@(0)"
-                                           value="@ProjectVisibility.Public"
-                                           checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Public)"
-                                           @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Public)" />
+                                    value="@ProjectVisibility.Public"
+                                    checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Public)"
+                                    @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Public)" />
                                     <label class="form-check-label">Public</label>
                                 </div>
 
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="radio" name="visibility_@(0)"
-                                           value="@ProjectVisibility.Private"
-                                           checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Private)"
-                                           @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Private)" />
+                                    value="@ProjectVisibility.Private"
+                                    checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Private)"
+                                    @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Private)" />
                                     <label class="form-check-label">Private</label>
                                 </div>
                             </div>
@@ -127,17 +127,17 @@
 
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="visibility_@(index)"
-                                               value="@ProjectVisibility.Public"
-                                               checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Public)"
-                                               @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Public)" />
+                                        value="@ProjectVisibility.Public"
+                                        checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Public)"
+                                        @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Public)" />
                                         <label class="form-check-label">Public</label>
                                     </div>
 
                                     <div class="form-check form-check-inline">
                                         <input class="form-check-input" type="radio" name="visibility_@(index)"
-                                               value="@ProjectVisibility.Private"
-                                               checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Private)"
-                                               @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Private)" />
+                                        value="@ProjectVisibility.Private"
+                                        checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Private)"
+                                        @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Private)" />
                                         <label class="form-check-label">Private</label>
                                     </div>
 
@@ -353,7 +353,7 @@
     {
         isSingleProject = (bool)e.Value;
         isMultipleProjects = false;
-      
+
         await InvokeAsync(StateHasChanged);
     }
 
@@ -420,6 +420,8 @@
             await SaveNewProjectLinks(context);
 
             await context.SaveChangesAsync();
+
+            _navigation.NavigateTo("/Projects",true);
         }
         catch (Exception ex)
         {

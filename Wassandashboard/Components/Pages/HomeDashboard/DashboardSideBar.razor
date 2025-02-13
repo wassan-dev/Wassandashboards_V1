@@ -175,7 +175,8 @@
                 }
                 else if (this.PrivateOrPublic == ProjectVisibility.Private.ToString())
                 {
-                    await LoadReportMenu(privateReports, context, menuItems);
+                    await LoadReportMenu(reports, context, menuItems);
+                    
                 }
 
                
@@ -221,8 +222,10 @@
                     // Get project name or default
                     var projectName = projects.ContainsKey(data.ProjectId) ? projects[data.ProjectId] : "Unknown Project";
 
-                    // Add parent item with sub-items
-                    menuList.Add(new MenuItem(data.Id, projectName, "#", subItems));
+                    if (!menuList.Any(m => m.ReportID == data.ProjectId && m.Title == projectName))
+                    {
+                        menuList.Add(new MenuItem(data.ProjectId, projectName, "#", subItems));
+                    }
                 }
             }
         }

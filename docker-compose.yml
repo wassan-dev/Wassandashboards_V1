@@ -1,0 +1,8 @@
+services:
+  rnisarg:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 5172:8080
+    restart: always

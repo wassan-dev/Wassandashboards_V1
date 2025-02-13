@@ -1,124 +1,126 @@
-﻿@page "/Account/Login";
+﻿@page "/Account/Login"
 
 @using System.ComponentModel.DataAnnotations
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Identity
 @using Wassandashboard.Data
+
 @attribute [AllowAnonymous]
+
 @inject SignInManager<ApplicationUser> SignInManager
 @inject ILogger<Login> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 <PageTitle>Log in</PageTitle>
 
 <head>
     <style>
-        html, body {
-            height: 100%;
-            margin: 0;
-        }
-
-        .container-fluid {
-            height: 95vh;
-            display: flex;
-        }
-
-        .image-container {
-            background: url("https://static.vecteezy.com/system/resources/previews/003/689/228/original/online-registration-or-sign-up-login-for-account-on-smartphone-app-user-interface-with-secure-password-mobile-application-for-ui-web-banner-access-cartoon-people-illustration-vector.jpg") no-repeat center center;
-            background-size: cover;
+        /* Background styling */
+        .login-page {
+            min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;
-            position: relative;
-            animation: fadeIn 2s;
+            justify-content: center;           
         }
 
-        .login-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-            background-color: #f5f5f5;
-            height: 100%;
-        }
-
-        .login-box {
+        /* Login card */
+        .login-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
             width: 100%;
             max-width: 400px;
-            background-color: white;
-            padding: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-radius: 10px;
         }
 
-        .form-control:focus {
-            box-shadow: none;
-            border-color: #007bff;
+        /* Form controls */
+        .form-control {
+            border-radius: 8px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ced4da;
         }
 
-        .btn-primary {
-            width: 100%;
-            background-color: #007bff;
-            border: none;
-        }
-
-            .btn-primary:hover {
-                background-color: #0056b3;
+            .form-control:focus {
+                border-color: #007bff;
+                box-shadow: none;
             }
 
-        .text-white {
-            color: #fff;
+        /* Login button */
+        .btn-login {
+            background: #007bff;
+            color: white;
+            font-size: 18px;
+            border-radius: 8px;
+            padding: 12px;
+            border: none;
+            width: 100%;
+            transition: background 0.3s;
         }
+
+            .btn-login:hover {
+                background: #0056b3;
+            }
+
+        /* Forgot Password */
+        .forgot-password {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+            .forgot-password a {
+                color: #007bff;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+                .forgot-password a:hover {
+                    text-decoration: underline;
+                }
     </style>
 </head>
 
-<div class="container-fluid">
-    <div class="col-md-6 d-none d-md-block image-container"></div>
-    <div class="col-md-6 login-container">
-        <div class="login-box">
-            <h3 class="text-center mb-4">Login</h3>
-            <StatusMessage Message="@errorMessage" />
-            <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
-                <DataAnnotationsValidator />
-                <hr />
-                <ValidationSummary class="text-danger" role="alert" />
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" aria-required="true" id="email" placeholder="name@example.com" required />
-                    <ValidationMessage For="() => Input.Email" class="text-danger" />
-                    <div class="invalid-feedback">Please enter a valid email.</div>
-                </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" aria-required="true" id="password" placeholder="password" required />
-                    <ValidationMessage For="() => Input.Password" class="text-danger" />
-                    <div class="invalid-feedback">Please enter your password.</div>
-                </div>
-                <div class="checkbox mb-3">
-                    <label class="form-label text-white">
-                        <InputCheckbox @bind-Value="Input.RememberMe" class="darker-border-checkbox form-check-input" />
-                        Remember me
-                    </label>
-                </div>
-                <div>
-                    <button type="submit" class="btn btn-primary">Login</button>
-                </div>
-                <div>
-                    <p class="text-center mt-3">
-                        <a class="text-white" href="Account/ForgotPassword">Forgot your password?</a>
-                    </p>
-                </div>
-            </EditForm>
-        </div>
+<div class="login-page">
+    <div class="login-card">
+        <h3 class="text-center">Login</h3>
+        <StatusMessage Message="@errorMessage" />
+
+        <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" role="alert" />
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <InputText @bind-Value="Input.Email" class="form-control" autocomplete="username" id="email" placeholder="name@example.com" required />
+                <ValidationMessage For="() => Input.Email" class="text-danger" />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <InputText type="password" @bind-Value="Input.Password" class="form-control" autocomplete="current-password" id="password" placeholder="••••••••" required />
+                <ValidationMessage For="() => Input.Password" class="text-danger" />
+            </div>
+
+            <div class="form-check">
+                <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" id="rememberMe" />
+                <label class="form-check-label" for="rememberMe">
+                    Remember me
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-login mt-3">Login</button>
+
+            <div class="forgot-password">
+                <a href="Account/ForgotPassword">Forgot your password?</a>
+            </div>
+        </EditForm>
     </div>
 </div>
 
 @code {
     private string? errorMessage;
-
-    [CascadingParameter]
-    private HttpContext HttpContext { get; set; } = default!;
 
     [SupplyParameterFromForm]
     private InputModel Input { get; set; } = new();
@@ -130,10 +132,11 @@
 
     protected override async Task OnInitializedAsync()
     {
-        if (!_hasSignedOut && HttpMethods.IsGet(HttpContext.Request.Method))
+        if (!_hasSignedOut && HttpContextAccessor.HttpContext?.Request?.Method != null &&
+            HttpMethods.IsGet(HttpContextAccessor.HttpContext.Request.Method))
         {
             Logger.LogInformation("Clearing external cookie...");
-            await HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+            await HttpContextAccessor.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
             _hasSignedOut = true; // Set flag to true so it doesn't run again
         }
     }

@@ -15,7 +15,7 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="mb-0">Projects</h3>
 
-        <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="d-flex align-items-center gap-3 mb-3 " >
             <AuthorizeView Policy="@Permissions.Projects.Create">
                 <button class="btn btn-success btn-sm d-flex align-items-center gap-2" @onclick=@(e=>Modal.Show<Create>("Create Project"))>
                     <i class="fa fa-plus"></i> Create New
@@ -35,14 +35,14 @@
         <QuickGrid class="table table-responsive" Items="FilteredData.AsQueryable()">
             <PropertyColumn class="text-nowrap" Property="Projects => Projects.Name" Title="Project Name" />
             <TemplateColumn Context="Projects" Title="Links">
-                <button class="btn btn-info btn-sm" @onclick="() => OpenViewModal(Projects)">
-                    <i class="fa-solid fa-eye"></i> View
+                <button class="btn  btn-sm" @onclick="() => OpenViewModal(Projects)">
+                    <i class="fa-solid fa-eye"></i> 
                 </button>
             </TemplateColumn>
             <TemplateColumn Context="Projects" Title="Actions">
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn btn-primary btn-sm" @onclick="() => OpenEditModal(Projects)">
-                        <i class="fa-solid fa-pencil-square-o"></i> Edit
+                    <button class="btn  btn-sm" @onclick="() => OpenEditModal(Projects)">
+                        <i class="fa-solid fa-pencil-square-o"></i>
                     </button>
                     <a href="@($"projects/delete?id={Projects.Id}")">
                         <i class="fa-solid fa-trash-o text-danger"></i>
@@ -54,6 +54,7 @@
 </div>
 
 <!-- Modal for Editing Project -->
+
 @if (isEditModalOpen)
 {
     <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
@@ -63,6 +64,7 @@
                     <h5 class="modal-title">Edit Project: @selectedProject?.Name</h5>
                     <button type="button" class="btn-close" @onclick="CloseEditModal"></button>
                 </div>
+
                 <div class="modal-body">
                     @if (isLoading)
                     {
@@ -74,39 +76,41 @@
                     }
                     else
                     {
-                        <div class="mb-4">
+                        <div class="mb-3">
                             <label class="fw-bold text-primary">Select Project Type:</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="singleProject"
-                                @bind="@this.isSingleProject" @oninput="ToggleSingleProject" />
-                                <label class="form-check-label text-dark fw-medium" for="singleProject">Single Project</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="checkbox" id="multipleProjects"
-                                @bind="@this.isMultipleProjects" @oninput="ToggleMultipleProjects" />
-                                <label class="form-check-label text-dark fw-medium" for="multipleProjects">Multiple Projects</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="singleProject"
+                                           @bind="@this.isSingleProject" @oninput="ToggleSingleProject" />
+                                    <label class="form-check-label text-dark fw-medium" for="singleProject">Single Project</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="multipleProjects"
+                                           @bind="@this.isMultipleProjects" @oninput="ToggleMultipleProjects" />
+                                    <label class="form-check-label text-dark fw-medium" for="multipleProjects">Multiple Projects</label>
+                                </div>
                             </div>
                         </div>
 
                         @if (isSingleProject)
                         {
-                            <div class="input-group mb-3 shadow-sm rounded">
-                                <input type="text" class="form-control border-primary" placeholder="Enter project link"
-                                @bind-value="linkInputs[0].Link" />
+                            <div class="input-group mb-2 shadow-sm rounded d-flex align-items-center gap-2">
+                                <input type="text" class="form-control form-control-sm border-primary" placeholder="Enter project link"
+                                       @bind-value="linkInputs[0].Link" />
 
-                                <div class="form-check form-check-inline">
+                                <div class="form-check">
                                     <input class="form-check-input" type="radio" name="visibility_@(0)"
-                                    value="@ProjectVisibility.Public"
-                                    checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Public)"
-                                    @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Public)" />
+                                           value="@ProjectVisibility.Public"
+                                           checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Public)"
+                                           @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Public)" />
                                     <label class="form-check-label">Public</label>
                                 </div>
 
-                                <div class="form-check form-check-inline">
+                                <div class="form-check">
                                     <input class="form-check-input" type="radio" name="visibility_@(0)"
-                                    value="@ProjectVisibility.Private"
-                                    checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Private)"
-                                    @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Private)" />
+                                           value="@ProjectVisibility.Private"
+                                           checked="@(linkInputs[0].Visibility == (int)ProjectVisibility.Private)"
+                                           @onchange="(e) => UpdateVisibility(0, ProjectVisibility.Private)" />
                                     <label class="form-check-label">Private</label>
                                 </div>
                             </div>
@@ -116,36 +120,35 @@
                             @for (int i = 0; i < linkInputs.Count; i++)
                             {
                                 var index = i;
-                                <div class="input-group mb-2 shadow-sm rounded">
-                                    <input type="text" class="form-control border-secondary" placeholder="Project Label"
-                                    value="@linkInputs[index].Label"
-                                    @oninput="e => UpdateProjectLabel(index, e.Value.ToString())" />
+                                <div class="input-group mb-2 shadow-sm rounded d-flex align-items-center gap-2">
+                                    <input type="text" class="form-control form-control-sm border-secondary" placeholder="Project Label"
+                                           value="@linkInputs[index].Label"
+                                           @oninput="e => UpdateProjectLabel(index, e.Value.ToString())" />
 
-                                    <input type="text" class="form-control border-secondary" placeholder="Enter link"
-                                    value="@linkInputs[index].Link"
-                                    @oninput="e => UpdateProjectLink(index, e.Value.ToString())" />
+                                    <input type="text" class="form-control form-control-sm border-secondary" placeholder="Enter link"
+                                           value="@linkInputs[index].Link"
+                                           @oninput="e => UpdateProjectLink(index, e.Value.ToString())" />
 
-                                    <div class="form-check form-check-inline">
+                                    <div class="form-check">
                                         <input class="form-check-input" type="radio" name="visibility_@(index)"
-                                        value="@ProjectVisibility.Public"
-                                        checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Public)"
-                                        @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Public)" />
+                                               value="@ProjectVisibility.Public"
+                                               checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Public)"
+                                               @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Public)" />
                                         <label class="form-check-label">Public</label>
                                     </div>
 
-                                    <div class="form-check form-check-inline">
+                                    <div class="form-check">
                                         <input class="form-check-input" type="radio" name="visibility_@(index)"
-                                        value="@ProjectVisibility.Private"
-                                        checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Private)"
-                                        @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Private)" />
+                                               value="@ProjectVisibility.Private"
+                                               checked="@(linkInputs[index].Visibility == (int)ProjectVisibility.Private)"
+                                               @onchange="(e) => UpdateVisibility(index, ProjectVisibility.Private)" />
                                         <label class="form-check-label">Private</label>
                                     </div>
 
-
-                                    <button class="btn btn-success px-3" type="button" @onclick="AddNewLink">+</button>
+                                    <button class="btn btn-primary btn-sm px-3" type="button" @onclick="AddNewLink">+</button>
                                     @if (linkInputs.Count() > 1)
                                     {
-                                        <button class="btn btn-danger px-3" type="button" @onclick="() => RemoveLink(index)">-</button>
+                                        <button class="btn btn-outline-danger btn-sm px-3" type="button" @onclick="() => RemoveLink(index)">-</button>
                                     }
                                 </div>
                             }
@@ -164,22 +167,22 @@
 
 @if (isViewModalOpen)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(255, 255, 255, 0.6);">
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.4);">
         <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 rounded-3 shadow-sm">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
 
                 <!-- Modal Header -->
-                <div class="modal-header bg-white border-bottom">
-                    <h5 class="modal-title fw-semibold text-primary">🔗 Project Links</h5>
-                    <button type="button" class="btn-close" @onclick="CloseViewModal"></button>
+                <div class="modal-header bg-primary text-white rounded-top">
+                    <h5 class="modal-title fw-semibold">🔗 Project Links</h5>
+                    <button type="button" class="btn-close btn-close-white" @onclick="CloseViewModal"></button>
                 </div>
 
                 <!-- Modal Body -->
-                <div class="modal-body p-4">
+                <div class="modal-body p-4 bg-white">
                     @if (isLoading)
                     {
                         <!-- Loading Spinner -->
-                        <div class="text-center my-3">
+                        <div class="text-center my-4">
                             <div class="spinner-border text-primary" role="status">
                                 <span class="visually-hidden">Loading...</span>
                             </div>
@@ -190,12 +193,11 @@
                         <ul class="list-group">
                             @foreach (var link in selectedProject.ProjectLinksData)
                             {
-                                <li class="list-group-item d-flex justify-content-between align-items-center border-0 bg-light rounded mb-2">
-                                    <div class="text-secondary">
-                                        <i class="fas fa-link me-2"></i>
-                                        <strong>@link.Label</strong>
+                                <li class="list-group-item d-flex justify-content-between align-items-center border-light shadow-sm rounded-3 mb-2 px-3 py-2">
+                                    <div class="text-dark fw-medium d-flex align-items-center gap-2">
+                                        <i class="fas fa-link text-primary"></i> @link.Label
                                     </div>
-                                    <a href="@link.Link" class="btn btn-sm btn-outline-primary rounded-pill px-3" target="_blank">
+                                    <a href="@link.Link" class="btn btn-sm btn-primary rounded-pill px-3" target="_blank">
                                         Open 🔗
                                     </a>
                                 </li>
@@ -204,13 +206,14 @@
                     }
                     else
                     {
-                        <p class="text-center text-muted">🚫 No links available.</p>
+                        <p class="text-center text-muted fw-medium">🚫 No links available.</p>
                     }
                 </div>
             </div>
         </div>
     </div>
 }
+
 
 
 @code {

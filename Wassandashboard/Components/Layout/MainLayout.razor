@@ -8,17 +8,9 @@
     <AuthorizeView>
         <Authorized>
             <div class="sidebar" style="margin-top:63px;">
-                <DashboardSidebar PrivateOrPublic="@ProjectVisibility.Private.ToString()"></DashboardSidebar>
-            </div>
+@*                 <DashboardSidebar PrivateOrPublic="@ProjectVisibility.Private.ToString()"></DashboardSidebar>
+ *@            </div>
         </Authorized>
-    </AuthorizeView>
-
-    <AuthorizeView>
-        <NotAuthorized>
-            <div class="sidebar" style="margin-top:63px;">
-                <DashboardSidebar PrivateOrPublic="@ProjectVisibility.Public.ToString()"></DashboardSidebar>
-            </div>
-        </NotAuthorized>
     </AuthorizeView>
 
     <main class="content-wrapper px-4">

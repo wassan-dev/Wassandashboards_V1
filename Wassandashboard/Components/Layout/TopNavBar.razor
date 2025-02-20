@@ -2,90 +2,117 @@
 
 @inject NavigationManager NavigationManager
 
-<nav class="navbar navbar-expand-lg navbar-light  shadow-sm fixed-top" style="background-color:#3D8D7A">
+<head>
+    <style>
+        .navbar-nav .nav-link {
+            color: white; /* Default text color */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            padding: 8px 15px; /* Add padding for better spacing */
+            border-radius: 5px;
+            position: relative; /* Needed for underline animation */
+            text-decoration: none;
+        }
+
+            /* Underline Effect */
+            .navbar-nav .nav-link::after {
+                content: "";
+                position: absolute;
+                left: 0;
+                bottom: -3px;
+                width: 0;
+                height: 2px;
+                background-color: #914151; /* Change this to your desired underline color */
+                transition: width 0.4s ease-in-out, background-color 0.3s ease;
+            }
+
+            /* Hover Effect */
+            .navbar-nav .nav-link:hover {
+                background-color: #d299a5 !important; /* Hover background color */
+                color: white !important;
+            }
+
+        
+
+            /* Active Link */
+            .navbar-nav .nav-link.active {
+                background-color: #914151 !important; /* Active background color */
+                color: white !important;
+            }
+
+               
+
+    </style>
+</head>
+
+
+<nav class="navbar navbar-expand-lg navbar-light shadow-sm fixed-top" style="background-color:#BA6476">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold text-white" href="/">Dashboard</a>
+        <a class="navbar-brand fw-bold text-white" href="/" style="color: white !important;">Dashboard</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse justify-content-end text-white" id="navbarNav">
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
             <ul class="navbar-nav">
+                <AuthorizeView Policy="@Permissions.Projects.View">
+                    <div class="nav-item">
+                        <NavLink class="nav-link text-white" href="regions" style="color: white !important;">
+                            <span class="bi bi-grid-1x2" style="top:-12.5px;margin-left:10px;"></span> Regions
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
 
-               
-                    <AuthorizeView Policy="@Permissions.Projects.View">
-                    <div class="nav-item text-white ">
-                            <NavLink class="nav-link" href="regions">
-                                <span class="bi bi-persons-fill-nav-menu" aria-hidden="true">
-                                    <i class="bi bi-grid-1x2"
-                                       style="top:-12.5px;margin-left:10px "></i>
-                                </span> Regions
+                <AuthorizeView Policy="@Permissions.Projects.View">
+                    <div class="nav-item">
+                        <NavLink class="nav-link text-white" href="projects" style="color: white !important;">
+                            <span class="bi bi-grid-1x2" style="top:-12.5px;margin-left:10px;"></span> Projects
+                        </NavLink>
+                    </div>
+                </AuthorizeView>
+
+                <AuthorizeView Roles="@RoleConstants.Wassandashboard">
+                    <Authorized>
+                        <div class="nav-item">
+                            <NavLink class="nav-link text-white" href="users" style="color: white !important;">
+                                <span class="bi bi-person-workspace" style="top:-12.5px;margin-left:10px;"></span> Administrator
                             </NavLink>
                         </div>
-                    </AuthorizeView>
+                    </Authorized>
+                </AuthorizeView>
 
-                    <AuthorizeView Policy="@Permissions.Projects.View">
-                    <div class="nav-item text-white">
-                            <NavLink class="nav-link" href="projects">
-                                <span class="bi bi-persons-fill-nav-menu" aria-hidden="true">
-                                    <i class="bi bi-grid-1x2"
-                                       style="top:-12.5px;margin-left:10px"></i>
-                                </span> Projects
+                <AuthorizeView>
+                    <Authorized>
+                        <div class="nav-item">
+                            <NavLink class="nav-link text-white" href="Account/Manage" style="color: white !important; font-size:14px;">
+                                <span class="bi bi-envelope" style="top:-12.5px;margin-left:10px;"></span>
+                                @context.User.Identity?.Name
                             </NavLink>
                         </div>
-                    </AuthorizeView>
-
-
-
-                    <AuthorizeView Roles="@RoleConstants.Wassandashboard">
-                        <Authorized>
-                        <div class="nav-item text-white">
-                                <NavLink class="nav-link" href="users">
-                                    <span class="bi bi-list-nested-nav-menu" aria-hidden="true">
-                                        <i class="bi bi-person-workspace"
-                                           style="top:-12.5px;margin-left:10px"></i>
-                                    </span> Administrator
-                                </NavLink>
-                            </div>
-                        </Authorized>
-                    </AuthorizeView>
-                    <AuthorizeView>
-                        <Authorized>
-                        <div class="nav-item text-white">
-                                <NavLink class="nav-link" href="Account/Manage" style="font-size:14px;">
-                                    <span class="bi bi-person-fill-nav-menu" aria-hidden="true" style="margin-right:10px">
-                                        <i class="bi bi-envelope" style="top:-12.5px;margin-left:10px"></i>
-                                    </span>
-                                    @context.User.Identity?.Name
-                                </NavLink>
-                            </div>
-                            <div class="nav-item" id="logout-button">
-                                <form action="Account/Logout" method="post">
-                                    <AntiforgeryToken />
-                                    <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                                    <button type="submit" class="nav-link fw-bold">
-                                        <span class="bi bi-arrow-bar-left-nav-menu" aria-hidden="true">
-                                            <i class="bi bi-box-arrow-right" style="top:-12.5px;margin-left:10px"></i>
-                                        </span>
-                                        Logout
-                                    </button>
-                                </form>
-                            </div>
-                        </Authorized>
-                        <NotAuthorized>
-                            <div class="nav-item px-3 ">
-                                <NavLink class="nav-link" href="Account/Login">
-                                    <span class="bi bi-person-badge-nav-menu " aria-hidden="true"></span> Login
-                                </NavLink>
-                            </div>
-                        </NotAuthorized>
-                    </AuthorizeView>
-                
+                        <div class="nav-item" id="logout-button">
+                            <form action="Account/Logout" method="post">
+                                <AntiforgeryToken />
+                                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                                <button type="submit" class="nav-link fw-bold text-white" style="color: white !important;">
+                                    <span class="bi bi-box-arrow-right" style="top:-12.5px;margin-left:10px;"></span>
+                                    Logout
+                                </button>
+                            </form>
+                        </div>
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="nav-item px-3">
+                            <NavLink class="nav-link text-white" href="Account/Login" style="color: white !important;">
+                                <span class="bi bi-person-badge"></span> Login
+                            </NavLink>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
             </ul>
         </div>
     </div>
 </nav>
+
 
 @code
 {

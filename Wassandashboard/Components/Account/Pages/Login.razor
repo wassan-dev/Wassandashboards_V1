@@ -12,6 +12,7 @@
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
 @inject IHttpContextAccessor HttpContextAccessor
+@layout HomeLayout
 
 <PageTitle>Log in</PageTitle>
 
@@ -22,7 +23,8 @@
             min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center;           
+            justify-content: center; 
+            background-color:#3D8D7A;
         }
 
         /* Login card */
@@ -84,7 +86,7 @@
 
 <div class="login-page">
     <div class="login-card">
-        <h3 class="text-center">Login</h3>
+        <h3 class="text-center text-white">Login</h3>
         <StatusMessage Message="@errorMessage" />
 
         <EditForm Model="Input" method="post" OnValidSubmit="LoginUser" FormName="login">

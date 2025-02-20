@@ -2,32 +2,31 @@
 
 @inject NavigationManager NavigationManager
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+<nav class="navbar navbar-expand-lg navbar-light  shadow-sm fixed-top" style="background-color:#3D8D7A">
     <div class="container-fluid">
-        <a class="navbar-brand fw-bold text-primary" href="/">Dashboard</a>
+        <a class="navbar-brand fw-bold text-white" href="/">Dashboard</a>
 
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
 
-        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <div class="collapse navbar-collapse justify-content-end text-white" id="navbarNav">
             <ul class="navbar-nav">
-               
-                    
 
+               
                     <AuthorizeView Policy="@Permissions.Projects.View">
-                        <div class="nav-item ">
+                    <div class="nav-item text-white ">
                             <NavLink class="nav-link" href="regions">
                                 <span class="bi bi-persons-fill-nav-menu" aria-hidden="true">
                                     <i class="bi bi-grid-1x2"
-                                       style="top:-12.5px;margin-left:10px"></i>
+                                       style="top:-12.5px;margin-left:10px "></i>
                                 </span> Regions
                             </NavLink>
                         </div>
                     </AuthorizeView>
 
                     <AuthorizeView Policy="@Permissions.Projects.View">
-                        <div class="nav-item ">
+                    <div class="nav-item text-white">
                             <NavLink class="nav-link" href="projects">
                                 <span class="bi bi-persons-fill-nav-menu" aria-hidden="true">
                                     <i class="bi bi-grid-1x2"
@@ -41,7 +40,7 @@
 
                     <AuthorizeView Roles="@RoleConstants.Wassandashboard">
                         <Authorized>
-                            <div class="nav-item">
+                        <div class="nav-item text-white">
                                 <NavLink class="nav-link" href="users">
                                     <span class="bi bi-list-nested-nav-menu" aria-hidden="true">
                                         <i class="bi bi-person-workspace"
@@ -53,7 +52,7 @@
                     </AuthorizeView>
                     <AuthorizeView>
                         <Authorized>
-                            <div class="nav-item">
+                        <div class="nav-item text-white">
                                 <NavLink class="nav-link" href="Account/Manage" style="font-size:14px;">
                                     <span class="bi bi-person-fill-nav-menu" aria-hidden="true" style="margin-right:10px">
                                         <i class="bi bi-envelope" style="top:-12.5px;margin-left:10px"></i>

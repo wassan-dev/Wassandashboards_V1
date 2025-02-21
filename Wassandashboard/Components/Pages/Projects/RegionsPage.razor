@@ -86,7 +86,7 @@
                 </div>
 
                 <div class="modal-footer">
-                    <button class="btn btn-primary" @onclick="CreateRegions" disabled="@(!RegionsList.Any() || isLoading)">
+                    <button class="btn text-white" style="background-color:#779c79" @onclick="CreateRegions" disabled="@(!RegionsList.Any() || isLoading)">
                         @if (isLoading)
                         {
                             <div class="spinner-border text-light" role="status"></div>

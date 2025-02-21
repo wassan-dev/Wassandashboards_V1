@@ -6,18 +6,22 @@
     <h4 class="px-4">Administrator</h4>
     <hr />
 
-    <div class="cards row d-flex">
-        <div class="card col " style="background-color:cadetblue" @onclick="@(e=>_navigation.NavigateTo("/users"))">
-            <p class="tip mt-2">Users</p>
+    <div class="row d-flex justify-content-center gap-3">
+        <div class="card col-4" style="background-color:cadetblue; text-align: left; padding: 10px;">
+            <button class="btn text-white btn-sm w-100" @onclick="@(e => _navigation.NavigateTo("/users"))">
+                Users
+            </button>
         </div>
-        <div class="card red col" style="background-color:darkolivegreen" @onclick="@(e=>_navigation.NavigateTo("/roles"))">
-            <p class="tip mt-2">Roles</p>
-        </div>       
-        
+        <div class="card col-4" style="background-color:darkolivegreen; text-align: left; padding: 10px;">
+            <button class="btn text-white btn-sm w-100" @onclick="@(e => _navigation.NavigateTo("/roles"))">
+                Roles
+            </button>
+        </div>
     </div>
-        @Body
+
+
+    @Body
 </div>
 
 @code {
-    
 }

@@ -22,7 +22,7 @@
                 </button>
             </AuthorizeView>
             <AuthorizeView Policy="@Permissions.Projects.Export">
-                <button @onclick="ExportToExcel" class="btn btn-success d-flex align-items-center gap-2">
+                <button @onclick="ExportToExcel" class="btn btn-success  btn-sm d-flex align-items-center gap-2">
                     <i class="fa fa-file-excel-o"></i> Export to Excel
                 </button>
             </AuthorizeView>
@@ -156,7 +156,7 @@
                     }
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn text-white" style="background-color:#86A788" @onclick="SaveProjectChanges" disabled="@(isLoading)">Save</button>
+                    <button class="btn btn text-white" style="background-color:#779c79" @onclick="SaveProjectChanges" disabled="@(isLoading)">Save</button>
                     <button class="btn btn-secondary" @onclick="CloseEditModal" disabled="@(isLoading)">Close</button>
                 </div>
             </div>

@@ -77,7 +77,7 @@
                     else
                     {
                         <div class="mb-3">
-                            <label class="fw-bold text-primary">Select Project Type:</label>
+                            <label class="fw-bold text-primary-emphasis">Select Project Type:</label>
                             <div class="d-flex gap-3">
                                 <div class="form-check">
                                     <input class="form-check-input" type="checkbox" id="singleProject"
@@ -145,7 +145,7 @@
                                         <label class="form-check-label">Private</label>
                                     </div>
 
-                                    <button class="btn btn-primary btn-sm px-3" type="button" @onclick="AddNewLink">+</button>
+                                    <button class="btn btn-secondary btn-sm px-3" type="button" @onclick="AddNewLink">+</button>
                                     @if (linkInputs.Count() > 1)
                                     {
                                         <button class="btn btn-outline-danger btn-sm px-3" type="button" @onclick="() => RemoveLink(index)">-</button>
@@ -156,7 +156,7 @@
                     }
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" @onclick="SaveProjectChanges" disabled="@(isLoading)">Save</button>
+                    <button class="btn btn text-white" style="background-color:#86A788" @onclick="SaveProjectChanges" disabled="@(isLoading)">Save</button>
                     <button class="btn btn-secondary" @onclick="CloseEditModal" disabled="@(isLoading)">Close</button>
                 </div>
             </div>
@@ -172,9 +172,9 @@
             <div class="modal-content border-0 rounded-4 shadow-lg">
 
                 <!-- Modal Header -->
-                <div class="modal-header bg-primary text-white rounded-top">
+                <div class="modal-header bg-gradient text-black rounded-top">
                     <h5 class="modal-title fw-semibold">🔗 Project Links</h5>
-                    <button type="button" class="btn-close btn-close-white" @onclick="CloseViewModal"></button>
+                    <button type="button" class="btn-close btn-close-black" @onclick="CloseViewModal"></button>
                 </div>
 
                 <!-- Modal Body -->
@@ -197,7 +197,7 @@
                                     <div class="text-dark fw-medium d-flex align-items-center gap-2">
                                         <i class="fas fa-link text-primary"></i> @link.Label
                                     </div>
-                                    <a href="@link.Link" class="btn btn-sm btn-primary rounded-pill px-3" target="_blank">
+                                    <a href="@link.Link" class="btn btn-sm btn-secondary rounded-pill px-3" target="_blank">
                                         Open 🔗
                                     </a>
                                 </li>

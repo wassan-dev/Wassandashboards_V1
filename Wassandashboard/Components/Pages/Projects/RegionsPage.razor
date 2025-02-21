@@ -28,7 +28,7 @@
                 <div>
                     @if (context is Data.Entities.Regions region)
                     {
-                        <button class="btn btn-primary btn-sm" @onclick="() => OpenManageProjectsModal(region)">
+                        <button class="btn btn-secondary btn-sm" @onclick="() => OpenManageProjectsModal(region)">
                             Manage Projects
                         </button>
                     }
@@ -137,7 +137,7 @@
                     </ul>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-primary" @onclick="SaveProjectAssignments">Save</button>
+                    <button class="btn text-white" style="background-color:#86A788" @onclick="SaveProjectAssignments">Save</button>
                     <button class="btn btn-secondary" @onclick="CloseManageProjectsModal">Close</button>
                 </div>
             </div>

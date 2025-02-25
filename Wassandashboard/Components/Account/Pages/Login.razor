@@ -1,34 +1,44 @@
 ﻿@page "/Account/Login"
 
 @using System.ComponentModel.DataAnnotations
+
 @using Microsoft.AspNetCore.Authentication
+
 @using Microsoft.AspNetCore.Identity
+
 @using Wassandashboard.Data
 
 @attribute [AllowAnonymous]
 
 @inject SignInManager<ApplicationUser> SignInManager
-@inject ILogger<Login> Logger
-@inject NavigationManager NavigationManager
-@inject IdentityRedirectManager RedirectManager
-@inject IHttpContextAccessor HttpContextAccessor
-@layout MainLayout
 
+@inject ILogger<Login> Logger
+
+@inject NavigationManager NavigationManager
+
+@inject IdentityRedirectManager RedirectManager
+
+@inject IHttpContextAccessor HttpContextAccessor
+
+@layout MainLayout
 
 <PageTitle>Log in</PageTitle>
 
 <head>
     <style>
+
         /* Background styling */
+
         .login-page {
             min-height: 100vh;
             display: flex;
             align-items: center;
-            justify-content: center; 
-            background-color: #7E99A3;
+            justify-content: center;
+            ;
         }
 
         /* Login card */
+
         .login-card {
             background: white;
             padding: 30px;
@@ -39,6 +49,7 @@
         }
 
         /* Form controls */
+
         .form-control {
             border-radius: 8px;
             padding: 10px;
@@ -52,6 +63,7 @@
             }
 
         /* Login button */
+
         .btn-login {
             background: #007bff;
             color: white;
@@ -68,6 +80,7 @@
             }
 
         /* Forgot Password */
+
         .forgot-password {
             text-align: center;
             margin-top: 15px;
@@ -85,7 +98,7 @@
     </style>
 </head>
 
-<div class="login-page mt-5" >
+<div class="login-page">
     <div class="login-card">
         <h3 class="text-center text-white">Login</h3>
         <StatusMessage Message="@errorMessage" />
@@ -109,11 +122,12 @@
             <div class="form-check">
                 <InputCheckbox @bind-Value="Input.RememberMe" class="form-check-input" id="rememberMe" />
                 <label class="form-check-label" for="rememberMe">
+
                     Remember me
                 </label>
             </div>
 
-            <button type="submit" class="btn btn-login mt-3">Login</button>
+            <button type="submit" style="background-color: #779c79; " class="btn btn-login mt-3">Login</button>
 
             <div class="forgot-password">
                 <a href="Account/ForgotPassword">Forgot your password?</a>
@@ -123,65 +137,112 @@
 </div>
 
 @code {
+
     private string? errorMessage;
 
     [SupplyParameterFromForm]
+
     private InputModel Input { get; set; } = new();
 
     [SupplyParameterFromQuery]
+
     private string? ReturnUrl { get; set; }
 
     private bool _hasSignedOut = false;
 
     protected override async Task OnInitializedAsync()
+
     {
+
         if (!_hasSignedOut && HttpContextAccessor.HttpContext?.Request?.Method != null &&
+
             HttpMethods.IsGet(HttpContextAccessor.HttpContext.Request.Method))
+
         {
+
             Logger.LogInformation("Clearing external cookie...");
+
             await HttpContextAccessor.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
+
             _hasSignedOut = true; // Set flag to true so it doesn't run again
+
         }
+
     }
 
     public async Task LoginUser()
+
     {
+
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+
         if (result.Succeeded)
+
         {
+
             Logger.LogInformation("User logged in.");
+
             if (ReturnUrl == "/" || string.IsNullOrEmpty(ReturnUrl))
+
             {
+
                 ReturnUrl = "/dashboard";
+
             }
+
             RedirectManager.RedirectTo(ReturnUrl);
+
         }
+
         else if (result.RequiresTwoFactor)
+
         {
+
             RedirectManager.RedirectTo("Account/LoginWith2fa", new() { ["returnUrl"] = ReturnUrl, ["rememberMe"] = Input.RememberMe });
+
         }
+
         else if (result.IsLockedOut)
+
         {
+
             Logger.LogWarning("User account locked out.");
+
             RedirectManager.RedirectTo("Account/Lockout");
+
         }
+
         else
+
         {
+
             errorMessage = "Error: Invalid login attempt.";
+
         }
+
     }
 
     private sealed class InputModel
+
     {
+
         [Required]
+
         [EmailAddress]
+
         public string Email { get; set; } = "";
 
         [Required]
+
         [DataType(DataType.Password)]
+
         public string Password { get; set; } = "";
 
         [Display(Name = "Remember me?")]
+
         public bool RememberMe { get; set; }
+
     }
+
 }
+

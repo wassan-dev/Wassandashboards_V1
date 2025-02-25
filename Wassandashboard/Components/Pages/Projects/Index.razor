@@ -9,15 +9,17 @@
 @inject IJSRuntime JSRuntime
 @inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
 
+@inject NavigationManager NavigationManager
+
 <PageTitle>Index</PageTitle>
 
 <div class="card p-3 mt-5">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h3 class="mb-0">Projects</h3>
 
-        <div class="d-flex align-items-center gap-3 mb-3 " >
+        <div class="d-flex align-items-center gap-3 mb-3 ">
             <AuthorizeView Policy="@Permissions.Projects.Create">
-                <button class="btn btn-success btn-sm d-flex align-items-center gap-2" @onclick=@(e=>Modal.Show<Create>("Create Project"))>
+                <button class="btn btn-success btn-sm d-flex align-items-center gap-2" @onclick="OpenCreateModal">
                     <i class="fa fa-plus"></i> Create New
                 </button>
             </AuthorizeView>
@@ -36,7 +38,7 @@
             <PropertyColumn class="text-nowrap" Property="Projects => Projects.Name" Title="Project Name" />
             <TemplateColumn Context="Projects" Title="Links">
                 <button class="btn  btn-sm" @onclick="() => OpenViewModal(Projects)">
-                    <i class="fa-solid fa-eye"></i> 
+                    <i class="fa-solid fa-eye"></i>
                 </button>
             </TemplateColumn>
             <TemplateColumn Context="Projects" Title="Actions">
@@ -54,7 +56,6 @@
 </div>
 
 <!-- Modal for Editing Project -->
-
 @if (isEditModalOpen)
 {
     <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
@@ -214,6 +215,133 @@
     </div>
 }
 
+@if (isCreateModalOpen)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.4);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content border-0 rounded-4 shadow-lg">
+
+                <!-- Modal Header -->
+                <div class="modal-header bg-gradient text-black rounded-top">
+                    <h5 class="modal-title fw-semibold"> Create Project</h5>
+                    <button type="button" class="btn-close btn-close-black" @onclick="CloseCreateModal"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4 bg-white">
+                    <EditForm method="post" Model="project" OnValidSubmit="AddOrganization" FormName="create" Enhance>
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger" />
+
+                        <!-- Project Name -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="Name">Project Name<span class="text-danger">*</span></label>
+                                    <InputText id="Name" class="form-control" @bind-Value="project.Name" />
+                                    <ValidationMessage For="@(() => project.Name)" />
+                                </div>
+                            </div>
+                            <!-- Location -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="Location">Location<span class="text-danger">*</span></label>
+                                    <InputText id="Location" class="form-control" @bind-Value="project.Location" />
+                                    <ValidationMessage For="@(() => project.Location)" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Location Type and No of Target Beneficiaries -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="LocationType">Location Type<span class="text-danger">*</span></label>
+                                    <InputSelect id="LocationType" class="form-control" @bind-Value="project.LocationType">
+                                        <option value="">Select</option>
+                                        <option value="Urban">Urban</option>
+                                        <option value="Urban slums">Urban slums</option>
+                                        <option value="Rural">Rural</option>
+                                        <option value="Adivasi">Adivasi</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => project.LocationType)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="NoofTargetBeneficiaries">No of Target Beneficiaries<span class="text-danger">*</span></label>
+                                    <InputNumber id="NoofTargetBeneficiaries" class="form-control" @bind-Value="project.NoofTargetBeneficiaries" />
+                                    <ValidationMessage For="@(() => project.NoofTargetBeneficiaries)" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Donor Name and Contact Person Name -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="DonorName">CSR/Partner/Donor Name<span class="text-danger">*</span></label>
+                                    <InputText id="DonorName" class="form-control" @bind-Value="project.DonorName" />
+                                    <ValidationMessage For="@(() => project.DonorName)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="ContactPersonName">Contact Person Name<span class="text-danger">*</span></label>
+                                    <InputText id="ContactPersonName" class="form-control" @bind-Value="project.ContactPersonName" />
+                                    <ValidationMessage For="@(() => project.ContactPersonName)" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Contact Number and Email -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="ContactNumber">Contact Number<span class="text-danger">*</span></label>
+                                    <InputText id="ContactNumber" class="form-control" @bind-Value="project.ContactNumber" />
+                                    <ValidationMessage For="@(() => project.ContactNumber)" />
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="Email">Email<span class="text-danger">*</span></label>
+                                    <InputText id="Email" class="form-control" @bind-Value="project.Email" />
+                                    <ValidationMessage For="@(() => project.Email)" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="row justify-content-start">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="Status">Status<span class="text-danger">*</span></label>
+                                    <InputSelect id="Status" class="form-control" @bind-Value="project.Status">
+                                        <option value="-1">Select</option>
+                                        <option value="1">Live</option>
+                                        <option value="0">Closed</option>
+                                    </InputSelect>
+                                    <ValidationMessage For="@(() => project.Status)" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Submit and Close Buttons -->
+                        <div class="row mt-4">
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn text-white float-end" style="background-color:#779c79;">Create</button>
+                            </div>
+                            <div class="col-md-6">
+                                <a href="/projects" class="btn btn-secondary" @onclick="CloseCreateModal">Close</a>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+}
 
 
 @code {
@@ -236,10 +364,15 @@
     private bool isViewModalOpen = false;
     private ProjectVisibility selectedVisibility;
     #endregion
+    DashboardDbContext context = default!;
+    [SupplyParameterFromForm]
+    public Projects project { get; set; } = new();
+    private EditContext editContext;
 
-    #region Lifecycle Methods
     protected override async Task OnInitializedAsync()
     {
+        editContext = new EditContext(project);
+        project.Status = -1; // Default invalid value for dropdown.
         using var context = DbFactory.CreateDbContext();
 
         var projects = await context.Projects.ToListAsync(); // Fetch data asynchronously
@@ -260,6 +393,21 @@
             }
         }
     }
+
+    public async Task AddOrganization()
+    {
+        if (!editContext.Validate())
+        {
+            return;
+        }
+        using var context = DbFactory.CreateDbContext();
+        context.Projects.Add(project);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/projects", true);
+    }
+
+    #region Lifecycle Methods
+
 
     #endregion
 
@@ -290,9 +438,9 @@
                 Label = pl.ProjectReportName,
                 Link = pl.ProjectLink,
                 Visibility = pl.IsPrivateOrPublic
-            }).ToList() ?? new List<ProjectLinksData>() { new ProjectLinksData() { Label = string.Empty,Link =  string.Empty} }; // Ensure linkInputs is always initialized
+            }).ToList() ?? new List<ProjectLinksData>() { new ProjectLinksData() { Label = string.Empty, Link = string.Empty } }; // Ensure linkInputs is always initialized
 
-        if(linkInputs.Count() == 0)
+        if (linkInputs.Count() == 0)
         {
             linkInputs = new List<ProjectLinksData>() { new ProjectLinksData() { Label = string.Empty, Link = string.Empty } }; // Ensure linkInputs is always initialized
         }
@@ -369,7 +517,7 @@
 
     private async Task TogglePivateProjects(int index, ChangeEventArgs e)
     {
-        if(e.Value != null)
+        if (e.Value != null)
         {
             linkInputs[index].Visibility = Convert.ToInt32(e.Value);
         }
@@ -424,7 +572,7 @@
 
             await context.SaveChangesAsync();
 
-            _navigation.NavigateTo("/Projects",true);
+            _navigation.NavigateTo("/Projects", true);
         }
         catch (Exception ex)
         {
@@ -532,7 +680,19 @@
         }
     }
     #endregion
+    private bool isCreateModalOpen = false;
 
+    // Method to open the "Create Project" modal
+    private void OpenCreateModal()
+    {
+        isCreateModalOpen = true;
+    }
+
+    // Method to close the "Create Project" modal
+    private void CloseCreateModal()
+    {
+        isCreateModalOpen = false;
+    }
     #region Models
     public class ProjectLinksData
     {

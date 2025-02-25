@@ -1,59 +1,322 @@
 ﻿@page "/Roles"
 
 @using Microsoft.AspNetCore.Identity
+
 @using Microsoft.EntityFrameworkCore
+
 @using Microsoft.AspNetCore.Components.QuickGrid
+
 @using Wassandashboard.Data.Constants
+
 @using Wassandashboard.Data.Entities
+
 @using Wassandashboard.Data
+
 @inject ApplicationDbContext _context
+
 @inject UserManager<ApplicationUser> UserManager
+
 @inject RoleManager<IdentityRole> RoleManager
 
+@inject IModalService Modal
+
+@inject NavigationManager Navigation
+
+@using System.Reflection
+
+@using Wassandashboard.Data.Models
+
 <PageTitle>Index</PageTitle>
-<style>
-    .table {
-        width: 100%;
-    }
-</style>
 
 <div class="row">
     <div class="d-flex justify-content-between align-items-center">
-        <h4 class=" mt-3">Roles</h4>
-        <button class="btn btn-sm btn-success float-end" @onclick=@(e=>Modal.Show<CreateRole>("Create Role"))>New Role</button>
+        <h4 class="mt-3">Roles</h4>
+        <button class="btn btn-sm btn-success float-end" @onclick="ShowCreateRoleModal">New Role</button>
     </div>
-    <hr/>
+    <hr />
     <div class="card">
-    <QuickGrid Class="table" Items="roles" Pagination="pagination">
-        <PropertyColumn Class="w-auto text-nowrap" Property="role =>role.Id " />
-        <PropertyColumn Class="w-auto text-nowrap" Property="role =>role.Name " />
-    @*     <PropertyColumn Class="w-auto text-nowrap" Property="role =>role.NormalizedName" />
-     *@    <TemplateColumn Class="w-auto text-nowrap" Context="role">
-            <button class="btn btn-primary
-" @onclick="@(e=>ShowPermissions(role))">Permissions</button>
-        </TemplateColumn>
-    </QuickGrid>
-    <Paginator State="pagination" />
-  </div>
+        <QuickGrid Class="table" Items="roles" Pagination="pagination">
+            <PropertyColumn Class="w-auto text-nowrap" Property="role =>role.Id" />
+            <PropertyColumn Class="w-auto text-nowrap" Property="role =>role.Name" />
+            <TemplateColumn Class="w-auto text-nowrap" Context="role">
+                <button class="btn btn text-white" style="background-color:#626F47" @onclick="@(e=>ShowPermissions(role))">Permissions</button>
+            </TemplateColumn>
+        </QuickGrid>
+        <Paginator State="pagination" />
+    </div>
 </div>
+
+@if (isCreateModalVisible)
+
+{
+    <div class="modal show d-block mt-5" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create Role</h5>
+                    <button type="button" class="btn-close" @onclick="CloseCreateRoleModal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <EditForm Model="Role" OnValidSubmit="AddRole">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary class="text-danger" />
+
+                        <div class="row">
+                            <div class="col-md-6 mb-2">
+                                <div class="form-group">
+                                    <label for="Name">Role Name <span class="text-danger">*</span></label>
+                                    <InputText id="Name" class="form-control" @bind-Value="Role.Name" />
+                                    <ValidationMessage For="@(() => Role.Name)" />
+                                </div>
+                            </div>
+                        </div>
+                    </EditForm>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-primary" @onclick="AddRole">Create</button>
+                    <button class="btn btn-secondary" @onclick="CloseCreateRoleModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
+@if (isPermissionsModalVisible)
+
+{
+    <div class="modal show d-block mt-5" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Manage Permissions for @selectedRole?.Name</h5>
+                    <button type="button" class="btn-close" @onclick="ClosePermissionsModal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <ul style="list-style-type:none">
+
+                        @foreach (var per in response)
+
+                        {
+                            <li>
+                                <label>
+                                    <input type="checkbox" @bind="@per.Selected" />
+
+                                    @per.PermissionValue
+                                </label>
+                            </li>
+
+                        }
+                    </ul>
+
+                    <button @onclick="AddPermissions" class="btn btn-success">Update Permissions</button>
+                </div>
+
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" @onclick="ClosePermissionsModal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+}
+
 @code {
 
     public IQueryable<IdentityRole> roles { get; set; }
+
+    public IdentityRole Role { get; set; } = new();
+
+    private bool isCreateModalVisible = false;
+
+    private bool isPermissionsModalVisible = false; // Separate flag for the permissions modal
+
+    private IdentityRole selectedRole { get; set; } // Store selected role for permissions modal
+
+    private List<PermissionsResopnse> response = new();
+
     PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
 
-    [CascadingParameter]
-    public IModalService Modal { get; set; } = default!;
+    // Load roles on initialization
+
     protected override async Task OnInitializedAsync()
+
     {
+
         var list = await RoleManager.Roles.Where(x => x.Name.StartsWith(AppConstants.ApplicationRolePrefix)).ToListAsync();
+
         roles = list.AsQueryable();
+
     }
 
-    private void ShowPermissions(IdentityRole role)
+    // Show Permissions Modal for selected role
+
+    private async Task ShowPermissions(IdentityRole role)
+
     {
-        var parameters = new ModalParameters();
-        parameters.Add("role", role);
-        Modal.Show<ManagePermissions>("Manage Permissions",parameters:parameters);
+
+        selectedRole = role; // Set the selected role for the permissions modal
+
+        // Fetch current permissions for the selected role
+
+        var permissions = _context.RoleClaims.Where(x => x.RoleId == role.Id).ToList();
+
+        // Clear the response list before adding new data
+
+        response.Clear();
+
+        // Fetch Permissions dynamically based on the Permissions class
+
+        foreach (var prop in typeof(Permissions).GetNestedTypes(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)
+
+                    .SelectMany(c => c.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.FlattenHierarchy)))
+
+        {
+
+            var propertyValue = prop.GetValue(null)?.ToString();
+
+            if (propertyValue == null) continue;
+
+            var presp = new PermissionsResopnse
+
+                {
+
+                    PermissionValue = propertyValue,
+
+                    RoleId = role.Id,
+
+                    Selected = permissions.Any(p => p.ClaimValue == propertyValue)
+
+                };
+
+            response.Add(presp);
+
+        }
+
+        isPermissionsModalVisible = true; // Show the permissions modal
+
+    }
+
+    // Show Create Role Modal
+
+    private void ShowCreateRoleModal()
+
+    {
+
+        isCreateModalVisible = true;
+
+    }
+
+    // Close Create Role Modal
+
+    private void CloseCreateRoleModal()
+
+    {
+
+        isCreateModalVisible = false;
+
+    }
+
+    // Close Permissions Modal
+
+    private void ClosePermissionsModal()
+
+    {
+
+        isPermissionsModalVisible = false;
+
+    }
+
+    // Add new role to the database
+
+    private async Task AddRole()
+
+    {
+
+        if (!string.IsNullOrEmpty(Role.Name))
+
+        {
+
+            await RoleManager.CreateAsync(Role);
+
+            isCreateModalVisible = false; // Close the modal after creating the role
+
+            var list = await RoleManager.Roles.Where(x => x.Name.StartsWith(AppConstants.ApplicationRolePrefix)).ToListAsync();
+
+            roles = list.AsQueryable(); // Refresh the list of roles
+
+        }
+
+    }
+
+    // Save updated permissions for the selected role
+
+    private async Task AddPermissions()
+
+    {
+
+        foreach (var resp in response)
+
+        {
+
+            var fromdb = _context.RoleClaims
+
+                     .FirstOrDefault(x => x.ClaimValue == resp.PermissionValue && x.RoleId == resp.RoleId);
+
+            if (resp.Selected)
+
+            {
+
+                if (fromdb == null)
+
+                {
+
+                    var permission = new IdentityRoleClaim<string>
+
+                        {
+
+                            RoleId = resp.RoleId,
+
+                            ClaimValue = resp.PermissionValue,
+
+                            ClaimType = ApplicationClaimTypes.Permission
+
+                        };
+
+                    _context.Add(permission);
+
+                    await _context.SaveChangesAsync();
+
+                }
+
+            }
+
+            else
+
+            {
+
+                if (fromdb != null)
+
+                {
+
+                    _context.Remove(fromdb);
+
+                    await _context.SaveChangesAsync();
+
+                }
+
+            }
+
+        }
+
+        // Reload the role list after saving permissions
+
+        Navigation.NavigateTo("/roles", true);
+
     }
 
 }
+

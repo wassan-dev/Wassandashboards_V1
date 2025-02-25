@@ -4,74 +4,83 @@
 
 <style>
     .layout-container {
-    display: flex;
-    height: 100vh;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
     }
 
     .sidebar {
-    background: #f8f9fa;
-    width: 250px;
-    transition: width 0.3s ease;
-    overflow-y: auto;
-    max-height: 100vh;
+        background: #181824;
+        width: 250px;
+        position: sticky; /* Fixed to prevent shrinking */
+        top: 0;
+        left: 0;
+        height: 100vh; /* Full height */
+        overflow-y: auto; /* Allow scrolling */
+        box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
     }
 
-    .content {
-    flex-grow: 1;
-    padding: 20px;
-    overflow-y: auto;
+    .main-content {
+        margin-left: 250px; /* Same as sidebar width */
+        padding: 20px;
+        flex-grow: 1; /* Prevents shrinking */
+        overflow-y: auto;
     }
 
     .nav-link {
-    font-weight: 500;
-    color: #333;
-    display: block;
-    padding: 10px;
-    text-decoration: none;
-    cursor: pointer;
+        font-weight: 500;
+        color: #8e94a9 !important;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        text-decoration: none;
+        cursor: pointer;
+        position: relative;
     }
 
-    .nav-link:hover {
-    background-color: #e9ecef;
-    border-radius: 5px;
-    }
+        .nav-link i {
+            color: #33c92d !important;
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
 
+        .nav-link:hover,
         .nav-link.active {
-            background-color: #007bff !important;
             color: white !important;
             border-radius: 5px;
         }
 
-
     .submenu {
-    list-style: none;
-    padding-left: 15px;
-    margin: 0;
-    display: none;
+        list-style: none;
+        padding-left: 15px;
+        margin: 0;
+        display: none;
     }
 
-    .submenu.show {
-    display: block;
+        .submenu.show {
+            display: block;
+        }
+
+    /* Arrow styling */
+    .arrow {
+        font-size: 1rem;
+        color: #8e94a9;
+        position: absolute;
+        right: 15px;
+        transition: transform 0.3s ease;
     }
 
-    .report-container {
-    flex-grow: 1;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    }
+        .arrow.active {
+            color: white;
+            transform: rotate(90deg); /* Rotates arrow when submenu is open */
+        }
 
-    iframe {
-    width: 100%;
-    height: 100%;
-    border: none;
-    }
+
 </style>
 
 <div class="layout-container">
-    <!-- Sidebar Section with Bootstrap Scrollbar -->
-    <nav class="sidebar card py-2 mb-4 overflow-auto">
+    <!-- Sidebar -->
+    <nav class="sidebar">
         <ul class="nav flex-column">
             @foreach (var item in menuItems)
             {
@@ -79,10 +88,10 @@
                     @if (item.SubItems?.Any() == true)
                     {
                         <a href="javascript:void(0)"
-                           class="nav-link d-flex justify-content-between align-items-center @(selectedMenuItem == item ? "active" : "")"
+                           class="nav-link @(selectedMenuItem == item ? "active" : "")"
                            @onclick="() => ToggleSubmenu(item)">
-                            @item.Title
-                            <i class="bi small @(item.IsExpanded ? "bi-caret-up-fill" : "bi-caret-down-fill")"></i>
+                            <i class="bi @(item.Icon)"></i> @item.Title
+                            <span class="arrow">></span> <!-- Arrow stays at far right -->
                         </a>
                         <ul class="submenu @(item.IsExpanded ? "show" : "")">
                             @foreach (var subItem in item.SubItems)
@@ -102,16 +111,13 @@
                         <a class="nav-link @(selectedMenuItem == item ? "active" : "")"
                            href="javascript:void(0)"
                            @onclick="() => LoadContent(item)">
-                            @item.Title
+                            <i class="bi @(item.Icon)"></i> @item.Title
                         </a>
                     }
                 </li>
             }
-
         </ul>
     </nav>
-
-
 </div>
 
 @code {
@@ -119,18 +125,12 @@
 
     private MenuItem selectedMenuItem;
 
-
     private List<ProjectLinks> privateReports = new List<ProjectLinks>();
-
     private List<ProjectLinks> publicReports = new List<ProjectLinks>();
-
-    private List<MenuItem> privateMenuItems = new List<MenuItem>();
-
     private List<MenuItem> menuItems = new List<MenuItem>();
 
     protected override async Task OnInitializedAsync()
     {
-
         await LoadData();
     }
 
@@ -142,7 +142,7 @@
         }
         catch (Exception ex)
         {
-            throw ex;   
+            Console.WriteLine($"Error loading data: {ex.Message}");
         }
     }
 
@@ -151,36 +151,23 @@
         try
         {
             using var context = DbFactory.CreateDbContext();
-
             var reports = await context.ProjectLinks.ToListAsync();
 
             if (reports != null && reports.Any())
             {
-                privateReports = reports
-                    .Where(x => x.IsPrivateOrPublic == (int)ProjectVisibility.Private)
-                    .ToList();
-
-                publicReports = reports
-                    .Where(x => x.IsPrivateOrPublic == (int)ProjectVisibility.Public)
-                    .ToList();
+                privateReports = reports.Where(x => x.IsPrivateOrPublic == (int)ProjectVisibility.Private).ToList();
+                publicReports = reports.Where(x => x.IsPrivateOrPublic == (int)ProjectVisibility.Public).ToList();
 
                 menuItems = new List<MenuItem>();
 
-
                 if (this.PrivateOrPublic == ProjectVisibility.Public.ToString())
                 {
-                    // Load and structure public reports
                     await LoadReportMenu(publicReports, context, menuItems);
-
                 }
                 else if (this.PrivateOrPublic == ProjectVisibility.Private.ToString())
                 {
                     await LoadReportMenu(reports, context, menuItems);
-                    
                 }
-
-               
-             
             }
         }
         catch (Exception ex)
@@ -193,13 +180,11 @@
     {
         if (reports == null || !reports.Any()) return;
 
-        // Group multiple project links by Project ID
         var groupedProjects = reports
             .Where(x => !x.IsSingleLink)
             .GroupBy(x => x.ProjectId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        // Fetch all project names in one query
         var projects = await context.Projects
             .Where(p => groupedProjects.Keys.Contains(p.Id))
             .ToDictionaryAsync(p => p.Id, p => p.Name);
@@ -208,10 +193,11 @@
         {
             if (data != null)
             {
+                string icon = data.IsSingleLink ? "bi-file-earmark" : "bi-folder"; // Assign icons
+
                 if (data.IsSingleLink)
                 {
-                    // Directly add as a single item
-                    menuList.Add(new MenuItem(data.ProjectId, data.ProjectReportName, data.ProjectLink));
+                    menuList.Add(new MenuItem(data.ProjectId, data.ProjectReportName, data.ProjectLink, icon));
                 }
                 else if (groupedProjects.ContainsKey(data.ProjectId))
                 {
@@ -219,12 +205,11 @@
                         .Select(x => new MenuItem(x.Id, x.ProjectReportName, x.ProjectLink))
                         .ToList();
 
-                    // Get project name or default
                     var projectName = projects.ContainsKey(data.ProjectId) ? projects[data.ProjectId] : "Unknown Project";
 
                     if (!menuList.Any(m => m.ReportID == data.ProjectId && m.Title == projectName))
                     {
-                        menuList.Add(new MenuItem(data.ProjectId, projectName, "#", subItems));
+                        menuList.Add(new MenuItem(data.ProjectId, projectName, "#", "bi-folder", subItems));
                     }
                 }
             }
@@ -238,8 +223,8 @@
 
     private async Task LoadContent(MenuItem menuItem)
     {
-        selectedMenuItem = menuItem; // Track the selected item
-        StateHasChanged(); // Force UI update
+        selectedMenuItem = menuItem;
+        StateHasChanged();
 
         if (this.PrivateOrPublic == ProjectVisibility.Public.ToString())
         {
@@ -253,17 +238,19 @@
 
     public class MenuItem
     {
-        public long ReportID { get; set; } 
+        public long ReportID { get; set; }
         public string Title { get; set; }
         public string Url { get; set; }
+        public string? Icon { get; set; } // Icons only for main items
         public List<MenuItem>? SubItems { get; set; }
         public bool IsExpanded { get; set; }
 
-        public MenuItem(long reportID,string title, string url, List<MenuItem>? subItems = null)
+        public MenuItem(long reportID, string title, string url, string? icon = null, List<MenuItem>? subItems = null)
         {
             ReportID = reportID;
             Title = title;
             Url = url;
+            Icon = icon;
             SubItems = subItems;
         }
     }

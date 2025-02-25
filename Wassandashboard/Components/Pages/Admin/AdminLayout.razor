@@ -1,7 +1,8 @@
 ﻿@inherits LayoutComponentBase
+
 @layout Wassandashboard.Components.Layout.MainLayout
 
-<div class="card p-3 mt-5">
+<div class="card p-3 m-3 mt-5">
 
     <h4 class="px-4">Administrator</h4>
     <hr />
@@ -9,11 +10,13 @@
     <div class="row d-flex justify-content-center gap-3">
         <div class="card col-4" style="background-color:cadetblue; text-align: left; padding: 10px;">
             <button class="btn text-white btn-sm w-100" @onclick="@(e => _navigation.NavigateTo("/users"))">
+
                 Users
             </button>
         </div>
         <div class="card col-4" style="background-color:#1B4D3E; text-align: left; padding: 10px;">
             <button class="btn text-white btn-sm w-100" @onclick="@(e => _navigation.NavigateTo("/roles"))">
+
                 Roles
             </button>
         </div>
@@ -24,4 +27,5 @@
 </div>
 
 @code {
+
 }

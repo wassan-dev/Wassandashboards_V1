@@ -3,7 +3,8 @@
 
 @inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
 
-<div style="width: 1200px; height: 700px; margin-top: 63px; overflow: auto; border: 1px solid #ddd; padding: 10px;">
+
+<div style="width: 1200px; height: 100vh; margin-top: 40px; overflow: auto; border: 1px solid #ddd; padding: 10px;">
     @if (IsLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
@@ -14,7 +15,7 @@
     }
     else if (!string.IsNullOrEmpty(CurrentReportUrl))
     {
-        <iframe width="1000" height="1200" src="@CurrentReportUrl" style="border: none;"></iframe>
+        <iframe width="1100" height="620" src="@CurrentReportUrl" style="border: none; "></iframe>
     }
     else
     {

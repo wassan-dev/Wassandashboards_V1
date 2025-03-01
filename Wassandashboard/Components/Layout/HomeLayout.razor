@@ -1,14 +1,23 @@
-﻿@inherits LayoutComponentBase
+﻿@using Wassandashboard.Components.Pages.HomeDashboard
+@using static Wassandashboard.Data.Models.Enums.CommonEnums
 @inject NavigationManager _navigation
+@inherits LayoutComponentBase
 
-<div>
-   
-    <div class="row d-flex">
-        <div class="col-sm-12 col-lg-12 mt-0 pt-0">
-          @Body
-        </div>
+
+
+<div class="page" style="display: flex; height: 100vh;">
+    <div class="sidebar">
+        <DashboardSideBar PrivateOrPublic="@ProjectVisibility.Public.ToString()"></DashboardSideBar>
     </div>
-    @* <Footer /> *@
+
+    <main style="flex: 1; display: flex; flex-direction: column;">
+        <div class="top-row px-4" style="height: 55px;">
+            <button class="btn btn-link" @onclick="loadLogin">Login</button>
+        </div>
+        <article class="content px-3" style="background-color: #f0f1f6; height: calc(100vh - 55px);">
+            @Body
+        </article>
+    </main>
 </div>
 
 
@@ -17,6 +26,10 @@
     <a href="" class="reload">Reload</a>
     <a class="dismiss">🗙</a>
 </div>
-@code{
-   
+
+@code {
+    private void loadLogin()
+    {
+        _navigation.NavigateTo("/Account/Login", true);
+    }
 }

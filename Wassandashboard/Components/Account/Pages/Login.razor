@@ -20,7 +20,7 @@
 
 @inject IHttpContextAccessor HttpContextAccessor
 
-@layout MainLayout
+@layout HomeLayout
 
 <PageTitle>Log in</PageTitle>
 
@@ -150,28 +150,16 @@
 
     private bool _hasSignedOut = false;
 
-    protected override async Task OnInitializedAsync()
-
+    protected override void OnInitialized()
     {
-
-        if (!_hasSignedOut && HttpContextAccessor.HttpContext?.Request?.Method != null &&
-
-            HttpMethods.IsGet(HttpContextAccessor.HttpContext.Request.Method))
-
+        var context = HttpContextAccessor.HttpContext;
+        if (context != null && context.User.Identity?.IsAuthenticated == true)
         {
-
-            Logger.LogInformation("Clearing external cookie...");
-
-            await HttpContextAccessor.HttpContext.SignOutAsync(IdentityConstants.ExternalScheme);
-
-            _hasSignedOut = true; // Set flag to true so it doesn't run again
-
+            NavigationManager.NavigateTo("/Account/Logout", forceLoad: true);
         }
-
     }
 
     public async Task LoginUser()
-
     {
 
         var result = await SignInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);

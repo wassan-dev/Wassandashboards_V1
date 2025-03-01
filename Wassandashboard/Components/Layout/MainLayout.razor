@@ -2,27 +2,24 @@
 @using static Wassandashboard.Data.Models.Enums.CommonEnums
 @inherits LayoutComponentBase
 
-<TopNavBar></TopNavBar>
 
-<div class="page">
+
+<div class="page" style="display: flex; height: 100vh;">
     <AuthorizeView>
         <Authorized>
-            <div class="sidebar-container">
-                <DashboardSideBar PrivateOrPublic="@ProjectVisibility.Private.ToString()"></DashboardSideBar>
+            <div class="sidebar">
+                <Dashboardprivate PrivateOrPublic="@ProjectVisibility.Private.ToString()"></Dashboardprivate>
             </div>
         </Authorized>
     </AuthorizeView>
 
-    <AuthorizeView>
-        <NotAuthorized>
-            <div class="sidebar-container">
-                <DashboardSideBar PrivateOrPublic="@ProjectVisibility.Public.ToString()"></DashboardSideBar>
-            </div>
-        </NotAuthorized>
-    </AuthorizeView>
+    
 
-    <main class="content-wrapper">
-        <article class="content py-3 " style="background-color: #f0f1f6; height:100%">
+    <main style="flex: 1; display: flex; flex-direction: column;">
+        <div class="top-row px-4">
+        <TopNavBar></TopNavBar> 
+        </div>
+        <article class="content px-3 " style="background-color: #f0f1f6; height: calc(100vh - 55px);">
             @Body
         </article>
     </main>

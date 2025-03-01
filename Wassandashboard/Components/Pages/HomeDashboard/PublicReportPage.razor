@@ -1,9 +1,10 @@
 ﻿@page "/publicreport"
 @page "/publicreport/{reportID}"
 @attribute [AllowAnonymous]
+@layout HomeLayout
 @inject IDbContextFactory<Wassandashboard.Data.DashboardDbContext> DbFactory
 
-<div style="width: 1200px; height: 700px; margin-top: 63px; overflow: auto; border: 1px solid #ddd; padding: 10px;">
+<div style="height: 100%;">
     @if (IsLoading)
     {
         <div class="d-flex justify-content-center align-items-center" style="height: 100%;">
@@ -14,13 +15,14 @@
     }
     else if (!string.IsNullOrEmpty(CurrentReportUrl))
     {
-        <iframe width="1000" height="1200" src="@CurrentReportUrl" style="border: none;"></iframe>
+        <iframe src="@CurrentReportUrl" style="width: 100%; height: 100%; border: none;"></iframe>
     }
     else
     {
         <p>Select a report to view</p>
     }
 </div>
+
 
 @code {
     [Parameter] public string reportID { get; set; } = string.Empty;

@@ -1,0 +1,21 @@
+﻿@page "/Account/Logout"
+@using Microsoft.AspNetCore.Authentication
+@inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
+
+<PageTitle>Logging Out...</PageTitle>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var context = HttpContextAccessor.HttpContext;
+        if (context != null)
+        {
+            await context.SignOutAsync(IdentityConstants.ApplicationScheme);
+            await context.SignOutAsync(IdentityConstants.ExternalScheme);
+        }
+
+        // Redirect to login after logout
+        NavigationManager.NavigateTo("/Account/Login", forceLoad: true);
+    }
+}

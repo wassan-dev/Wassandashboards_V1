@@ -5,7 +5,6 @@
 
 @using Microsoft.AspNetCore.Components.Authorization
 
-<head>
     <style>
         .navbar-nav .nav-link {
             color: white; /* Default text color */
@@ -39,10 +38,10 @@
         /*     color: white !important; */
         /* } */
     </style>
-</head>
 
 
-<AuthorizeView Policy="@Permissions.Projects.View">
+
+@* <AuthorizeView Policy="@Permissions.Projects.View">
     <div class="nav-item">
         <NavLink class="nav-link text-white" href="regions" style="color: black !important;">
             <span class="bi bi-grid-1x2" style="top:-12.5px;margin-left:10px;"></span> Regions
@@ -94,9 +93,40 @@
             </NavLink>
         </div>
     </NotAuthorized>
+</AuthorizeView> *@
+
+
+<AuthorizeView Policy="@Permissions.Regions.View">
+    <a class="btn btn-link" href="regions">Regions</a>        
 </AuthorizeView>
 
+<AuthorizeView Policy="@Permissions.Projects.View">
+    <a class="btn btn-link" href="Projects">Projects</a>
+</AuthorizeView>
 
+<AuthorizeView Roles="@RoleConstants.Wassandashboard">
+    <Authorized>
+        <a class="btn btn-link" href="users">Administrator</a>
+    </Authorized>
+</AuthorizeView>
+
+<AuthorizeView>
+    <Authorized>        
+            <a class="btn-link btn" href="Account/Manage">
+                <span class="bi bi-envelope" style="top:-12.5px;margin-left:10px;"></span>
+                @userName
+            </a>        
+        <div class="nav-item" id="logout-button">
+            <form action="Account/Logout" method="post">
+                <AntiforgeryToken />
+                <input type="hidden" name="ReturnUrl" value="@currentUrl" />
+                <button type="submit" class="btn-link btn">                    
+                    Logout
+                </button>
+            </form>
+        </div>
+    </Authorized>    
+</AuthorizeView> 
 @code
 {
     private string? currentUrl;

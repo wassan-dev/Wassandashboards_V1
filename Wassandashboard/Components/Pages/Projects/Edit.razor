@@ -29,85 +29,8 @@ else
                             <ValidationMessage For="@(() => Projects.Name)" />
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="Location">Location<span class="text-danger">*</span></label>
-                            <InputText id="Location" class="form-control" @bind-Value="Projects.Location" />
-                            <ValidationMessage For="@(() => Projects.Location)" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="LocationType">Location Type<span class="text-danger">*</span></label>
-                            <InputSelect id="LocationType" class="form-control" @bind-Value="Projects.LocationType">
-                                <option value="">Select</option>
-                                <option value="Urban">Urban</option>
-                                <option value="Urban slums">Urban slums</option>
-                                <option value="Rural">Rural</option>
-                                <option value="Adivasi">Adivasi</option>
-                            </InputSelect>
-                            <ValidationMessage For="@(() => Projects.LocationType)" />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="NoofTargetBeneficiaries">No of Target Beneficiaries<span class="text-danger">*</span></label>
-                            <InputNumber id="NoofTargetBeneficiaries" class="form-control" @bind-Value="Projects.NoofTargetBeneficiaries" />
-                            <ValidationMessage For="@(() => Projects.NoofTargetBeneficiaries)" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="DonorName">CSR/Partner/Donor Name<span class="text-danger">*</span></label>
-                            <InputText id="DonorName" class="form-control" @bind-Value="Projects.DonorName" />
-                            <ValidationMessage For="@(() => Projects.DonorName)" />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="ContactPersonName">Contact Person Name<span class="text-danger">*</span></label>
-                            <InputText id="ContactPersonName" class="form-control" @bind-Value="Projects.ContactPersonName" />
-                            <ValidationMessage For="@(() => Projects.ContactPersonName)" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="ContactNumber">Contact Number<span class="text-danger">*</span></label>
-                            <InputText id="ContactNumber" class="form-control" @bind-Value="Projects.ContactNumber" />
-                            <ValidationMessage For="@(() => Projects.ContactNumber)" />
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="Email">Email<span class="text-danger">*</span></label>
-                            <InputText id="Email" class="form-control" @bind-Value="Projects.Email" />
-                            <ValidationMessage For="@(() => Projects.Email)" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row justify-content-start">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label for="Status">Status<span class="text-danger">*</span></label>
-                            <InputSelect id="Status" class="form-control" @bind-Value="Projects.Status">
-                                <option value="-1">Select</option>
-                                <option value="1">Live</option>
-                                <option value="0">Closed</option>
-                            </InputSelect>
-                            <ValidationMessage For="@(() => Projects.Status)" />
-                        </div>
-                    </div>
-                </div>
+                  
+                </div>                
                 <button type="submit" class="btn btn-primary float-end">Save</button>
                 <a href="/projects" class="btn">Back</a>
             </EditForm>

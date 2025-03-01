@@ -1,16 +1,19 @@
 ﻿@inherits LayoutComponentBase
 @layout AccountLayout
 
-<h4 class="px-4">Manage your account</h4>
-<hr/>
-<div>
-    <h6 class="px-4">Change your account settings</h6>
-    <div class="row">
-        <div class="col-md-3">
-            <ManageNavMenu />
-        </div>
-        <div class="col-md-9">
-            @Body
+<article class="content py-4" style="background-color: #f0f1f6; min-height: 100vh;">
+    <div class="container mt-3 me-2" style="margin-right: 30px;">
+        <h4 class="mb-3 mt-3">Manage your account</h4> 
+        <hr />           
+        <h6 class="mb-4 mt-3">Change your account settings</h6> 
+
+        <div class="row">
+            <div class="col-md-3 col-sm-12 mb-3">
+                <ManageNavMenu />
+            </div>
+            <div class="col-md-9 col-sm-12">
+                @Body
+            </div>
         </div>
     </div>
-</div>
+</article>

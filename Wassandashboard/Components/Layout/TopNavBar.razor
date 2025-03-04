@@ -6,26 +6,26 @@
 @using Microsoft.AspNetCore.Components.Authorization
 
     <style>
-        .navbar-nav .nav-link {
-            color: white; /* Default text color */
-            transition: background-color 0.3s ease, color 0.3s ease;
-            padding: 8px 15px; /* Add padding for better spacing */
-            border-radius: 5px;
-            position: relative; /* Needed for underline animation */
-            text-decoration: none;
-        }
+         .navbar-nav .nav-link {
+             color: white; /* Default text color */
+             transition: background-color 0.3s ease, color 0.3s ease;
+             padding: 8px 15px; /* Add padding for better spacing */
+             border-radius: 5px;
+             position: relative; /* Needed for underline animation */
+             text-decoration: none;
+         }
 
-            /* Underline Effect */
-            .navbar-nav .nav-link::after {
-                content: "";
-                position: absolute;
-                left: 0;
-                bottom: -3px;
-                width: 0;
-                height: 2px;
-                background-color: #33c92d; /* Change this to your desired underline color */
-                transition: width 0.4s ease-in-out, background-color 0.3s ease;
-            }
+             /* Underline Effect */
+             .navbar-nav .nav-link::after {
+                 content: "";
+                 position: absolute;
+                 left: 0;
+                 bottom: -3px;
+                 width: 0;
+                 height: 2px;
+                 background-color: #33c92d; /* Change this to your desired underline color */
+                 transition: width 0.4s ease-in-out, background-color 0.3s ease;
+             }
 
         /* Hover Effect */
         /* .navbar-nav .nav-link:hover { */
@@ -97,36 +97,47 @@
 
 
 <AuthorizeView Policy="@Permissions.Regions.View">
-    <a class="btn btn-link" href="regions">Regions</a>        
+    <a class="btn btn-link" href="regions">
+        <i class="bi bi-geo-alt"></i>
+        <span class="d-none d-md-inline">Regions</span> <!-- Hide text on mobile -->
+    </a>
 </AuthorizeView>
 
 <AuthorizeView Policy="@Permissions.Projects.View">
-    <a class="btn btn-link" href="Projects">Projects</a>
+    <a class="btn btn-link" href="Projects">
+        <i class="bi bi-grid-1x2"></i>
+        <span class="d-none d-md-inline">Projects</span> <!-- Hide text on mobile -->
+    </a>
 </AuthorizeView>
 
 <AuthorizeView Roles="@RoleConstants.Wassandashboard">
     <Authorized>
-        <a class="btn btn-link" href="users">Administrator</a>
+        <a class="btn btn-link" href="users">
+            <i class="bi bi-file-person"></i>
+            <span class="d-none d-md-inline">Administrator</span> <!-- Hide text on mobile -->
+        </a>
     </Authorized>
 </AuthorizeView>
 
 <AuthorizeView>
-    <Authorized>        
-            <a class="btn-link btn" href="Account/Manage">
-                <span class="bi bi-envelope" style="top:-12.5px;margin-left:10px;"></span>
-                @userName
-            </a>        
+    <Authorized>
+        <a class="btn-link btn" href="Account/Manage">
+            <i class="bi bi-envelope"></i>
+            <span class="d-none d-md-inline">@userName</span> <!-- Hide text on mobile -->
+        </a>
         <div class="nav-item" id="logout-button">
             <form action="Account/Logout" method="post">
                 <AntiforgeryToken />
                 <input type="hidden" name="ReturnUrl" value="@currentUrl" />
-                <button type="submit" class="btn-link btn">                    
-                    Logout
+                <button type="submit" class="btn-link btn ">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span class="d-none d-md-inline">Logout</span>
                 </button>
             </form>
         </div>
-    </Authorized>    
-</AuthorizeView> 
+    </Authorized>
+</AuthorizeView>
+
 @code
 {
     private string? currentUrl;

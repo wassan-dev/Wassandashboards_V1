@@ -28,7 +28,7 @@
         <a class="btn btn-sm btn-success" href="/account/register">Create New</a>
     </div>
     <hr />
-    <div class="card">
+    <div class="card" style="overflow:auto">
         <QuickGrid Class="table" Items="Users" Pagination="pagination">
             <PropertyColumn Property="user => user.UserName" />
             <PropertyColumn Property="user => user.Email" />
@@ -45,8 +45,8 @@
 @if (isModalVisible)
 
 {
-    <div class="modal show d-block mt-5" style="background: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-lg">
+    <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
+        <div class="modal-dialog modal-dialog-centered w-75 modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Manage Regions for @UserName</h5>

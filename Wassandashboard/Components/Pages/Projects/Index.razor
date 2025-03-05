@@ -42,7 +42,7 @@
                 </button>
             </TemplateColumn>
             <TemplateColumn Context="Projects" Title="Actions">
-                <div style="display: flex; gap: 10px;">
+                <div class="d-flex gap-2">
                     <button class="btn  btn-sm" @onclick="() => OpenEditModal(Projects)">
                         <i class="fa-solid fa-pencil-square-o"></i>
                     </button>
@@ -59,7 +59,7 @@
 @if (isEditModalOpen)
 {
     <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
-        <div class="modal-dialog modal-lg">
+        <div class="modal-dialog modal-dialog-centered  w-75 modal-dialog-scrollable ">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Project: @selectedProject?.Name</h5>
@@ -168,9 +168,9 @@
 
 @if (isViewModalOpen)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.4);">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 rounded-4 shadow-lg">
+    <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.4);">
+        <div class="modal-dialog modal-dialog-centered modal-sm modal-dialog-scrollable ">
+            <div class="modal-content">
 
                 <!-- Modal Header -->
                 <div class="modal-header bg-gradient text-black rounded-top">
@@ -217,9 +217,9 @@
 
 @if (isCreateModalOpen)
 {
-    <div class="modal fade show d-block" tabindex="-1" style="background: rgba(0, 0, 0, 0.4);">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content border-0 rounded-4 shadow-lg">
+    <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.4);">
+        <div class="modal-dialog modal-dialog-centered modal-sm modal-dialog-scrollable">
+            <div class="modal-content">
 
                 <!-- Modal Header -->
                 <div class="modal-header bg-gradient text-black rounded-top">
@@ -235,7 +235,7 @@
 
                         <!-- Project Name -->
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="Name">Project Name<span class="text-danger">*</span></label>
                                     <InputText id="Name" class="form-control" @bind-Value="project.Name" />

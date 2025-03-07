@@ -36,12 +36,13 @@
 </div>
 
 <div class="mt-3">
-    <button class="btn btn-primary" @onclick="SaveRegionAssignments" disabled="@(isLoading)">Save</button>
+    <button class="btn btn text-white" style="background-color:#779c79" @onclick="SaveRegionAssignments" disabled="@(isLoading)">Save</button>
     <button class="btn btn-secondary" @onclick="CloseManageRegionsModal" disabled="@(isLoading)">Close</button>
 </div>
 
 @code {
-    [Parameter] public string UserName { get; set; } = "user@example.com"; // Default for testing
+    [Parameter] 
+    public string UserName { get; set; } = null; // Default for testing
 
     private List<Regions> regions = new();
     private HashSet<long> selectedRegionIds = new();
@@ -61,16 +62,16 @@
         {
             using var context = await DbFactory.CreateDbContextAsync();
 
-            // Fetch all regions
+            // Fetch all regions from the Regions table
             regions = await context.Regions.ToListAsync();
 
-            // Fetch user's assigned regions
+            // Fetch user's assigned regions from the ManageRegions table
             var assignedRegions = await context.ManageRegions
                 .Where(m => m.UserEmail == UserName)
                 .Select(m => m.RegionID)
                 .ToListAsync();
 
-            selectedRegionIds = assignedRegions.ToHashSet();
+            selectedRegionIds = assignedRegions.ToHashSet();  // Store the assigned regions for user
         }
         catch (Exception ex)
         {
@@ -88,9 +89,9 @@
     private void ToggleRegionAssignment(long regionId, bool isChecked)
     {
         if (isChecked)
-            selectedRegionIds.Add(regionId);
+            selectedRegionIds.Add(regionId);  // Add region to selected set
         else
-            selectedRegionIds.Remove(regionId);
+            selectedRegionIds.Remove(regionId);  // Remove region from selected set
     }
 
     /// <summary>
@@ -103,7 +104,7 @@
         {
             using var context = await DbFactory.CreateDbContextAsync();
 
-            // Remove old assignments
+            // Remove old assignments from the ManageRegions table for this user
             var existingRegions = context.ManageRegions.Where(m => m.UserEmail == UserName);
             context.ManageRegions.RemoveRange(existingRegions);
 
@@ -112,8 +113,11 @@
                 .Select(regionId => new ManageRegions { UserEmail = UserName, RegionID = regionId })
                 .ToList();
 
+            // Save the new assignments to the database
             await context.ManageRegions.AddRangeAsync(newRegions);
             await context.SaveChangesAsync();
+
+            // Redirect after saving
             Navigation.NavigateTo("/users", true);
             Console.WriteLine("Regions updated successfully!");
         }
@@ -132,6 +136,6 @@
     /// </summary>
     private void CloseManageRegionsModal()
     {
-        Navigation.NavigateTo("/");
+        Navigation.NavigateTo("/"); // Navigate back to the main page or previous page
     }
 }

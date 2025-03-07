@@ -81,7 +81,7 @@
         Logger.LogInformation("User created a new account with password.");
 
         var userId = await UserManager.GetUserIdAsync(user);
-        await UserManager.AddToRoleAsync(user, "greenpharmacy");
+        await UserManager.AddToRoleAsync(user, "wassandashboard");
         
         var code = await UserManager.GenerateEmailConfirmationTokenAsync(user);
         code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));

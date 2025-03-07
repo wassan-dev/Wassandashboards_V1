@@ -1,30 +1,20 @@
 ﻿@page "/users"
 
 @using Microsoft.AspNetCore.Identity
-
 @using Microsoft.EntityFrameworkCore
-
 @using Microsoft.AspNetCore.Components.QuickGrid
-
-@using Wassandashboard.Data.Constants
-
-@using Wassandashboard.Data.Entities
-
 @using Wassandashboard.Data
-
-@inject ApplicationDbContext _context
-
+@using Wassandashboard.Data.Entities
+@inject DashboardDbContext _context
 @inject UserManager<ApplicationUser> UserManager
-
 @inject RoleManager<IdentityRole> RoleManager
-
 @inject NavigationManager Navigation
 
 <PageTitle>Users</PageTitle>
 
 <div class="row">
     <div class="d-flex justify-content-between align-items-center">
-        <h4 class="mt-3">Users</h4>
+        <h4 class="mt-3">User</h4>
         <a class="btn btn-sm btn-success" href="/account/register">Create New</a>
     </div>
     <hr />
@@ -34,7 +24,7 @@
             <PropertyColumn Property="user => user.Email" />
             <PropertyColumn Property="user => user.EmailConfirmed" Title="Active" />
             <TemplateColumn class="text-nowrap" Context="user">
-                <button @onclick="@(e => ShowNgos(user.Email))" class="btn btn-sm w-50" style="background-color:#626F47; border-color:#626F47; color: white;">Manage Regions</button>
+                <button @onclick="@(e => ShowNgos(user.Email))" class="btn btn-sm" style="background-color:#626F47; border-color:#626F47; color: white;">Manage Regions</button>
             </TemplateColumn>
         </QuickGrid>
         <Paginator State="pagination" />
@@ -43,133 +33,100 @@
 
 <!-- Modal for Managing Regions -->
 @if (isModalVisible)
-
 {
+
     <div class="modal show d-block" style="background: rgba(0, 0, 0, 0.5);">
         <div class="modal-dialog modal-dialog-centered w-75 modal-dialog-scrollable">
             <div class="modal-content">
-                <div class="modal-header">
+               @*  <div class="modal-header">
                     <h5 class="modal-title">Manage Regions for @UserName</h5>
                     <button type="button" class="btn-close" @onclick="CloseModal"></button>
-                </div>
+                </div> *@
 
                 <div class="modal-body">
+                <ManageNgos UserName="@UserName"/>
 
-                    @if (regions != null)
-
-                    {
-                        <ul>
-
-                            @foreach (var region in regions)
-
-                            {
-                                <li>
-                                    <label>
-                                        <input type="checkbox" @bind="@region.Selected" />
-
-                                        @region.RegionName
-                                    </label>
-                                </li>
-
-                            }
-                        </ul>
-
-                    }
                 </div>
-
+@* 
                 <div class="modal-footer">
                     <button class="btn btn text-white" style="background-color:#779c79" @onclick="SaveRegions">Save Changes</button>
                     <button class="btn btn-secondary" @onclick="CloseModal">Close</button>
-                </div>
+                </div> *@
             </div>
         </div>
     </div>
-
 }
 
 @code {
-
     public IQueryable<ApplicationUser> Users { get; set; }
-
     public PaginationState pagination = new PaginationState { ItemsPerPage = 10 };
-
-    public class RegionResponse
-
-    {
-
-        public string RegionName { get; set; }
-
-        public bool Selected { get; set; }
-
-    }
+    private HashSet<long> selectedRegionIds = new();
 
     private bool isModalVisible = false;  // Control modal visibility
-
     private string UserName { get; set; }
+    private List<ManageRegions> regions;
 
-    private List<RegionResponse> regions;
 
+    // This method runs when the page is first loaded
     protected override async Task OnInitializedAsync()
-
     {
-
+        // Get the list of users for the application role
         var list = await UserManager.GetUsersInRoleAsync(AppConstants.ApplicationRole);
-
         Users = list.AsQueryable();
-
     }
 
     // Show Manage Regions Modal for the selected user
-
-    private void ShowNgos(string userEmail)
-
+    private async Task ShowNgos(string userEmail)
     {
-
         UserName = userEmail;  // Set the username for the modal
-
         isModalVisible = true;  // Show the modal
 
-        // Fetch regions for the user (this can be customized based on your data model)
-
-        regions = new List<RegionResponse>
-
-        {
-
-            new RegionResponse { RegionName = "Region 1", Selected = true },
-
-            new RegionResponse { RegionName = "Region 2", Selected = false },
-
-            new RegionResponse { RegionName = "Region 3", Selected = true }
-
-        };
-
+        // Fetch regions from the Regions DbSet in DashboardDbContext and set their selected status (false by default)
+        regions = await _context.Regions
+            .Select(region => new ManageRegions
+            {
+                RegionName = region.RegionName,
+                Id = region.Id,  // Ensure Id is part of the object
+                Selected = false // Set selected to false initially (you can modify this logic based on requirements)
+            })
+            .ToListAsync();
     }
 
-    // Save the selected regions for the user
+    // Toggle the selection of regions
+    private void ToggleRegionAssignment(long regionId, bool isChecked)
+    {
+        if (isChecked)
+            selectedRegionIds.Add(regionId);  // Add region to selected set
+        else
+            selectedRegionIds.Remove(regionId);  // Remove region from selected set
+    }
 
     private void SaveRegions()
-
     {
-
         // Logic to save the selected regions for the user
+        // You can now iterate over the regions and save them to the database as per your requirements
 
-        // Here, you could update the regions in your database
+        // For example, saving to a ManageRegions table:
+        // 1. Remove old assignments
+        // 2. Add new assignments based on `regions` where `Selected = true`
 
+        // After saving, close the modal and redirect
         isModalVisible = false;  // Close the modal
-
         Navigation.NavigateTo("/users"); // Redirect back to users page
-
     }
+
 
     // Close the modal
-
     private void CloseModal()
-
     {
-
         isModalVisible = false;  // Close the modal
-
     }
 
+    // ManageRegions class to hold the RegionName, RegionId, and Selection status
+    public class ManageRegions
+    {
+        public string RegionName { get; set; }
+        public long Id { get; set; }  // Add the Id property to access region id
+        public bool Selected { get; set; }
+    }
 }
-

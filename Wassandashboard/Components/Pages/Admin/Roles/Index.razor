@@ -115,7 +115,7 @@
                     <button @onclick="AddPermissions" class="btn btn-success">Update Permissions</button>
                 </div>
 
-               
+
             </div>
         </div>
     </div>
@@ -231,33 +231,29 @@
     // Add new role to the database
 
     private async Task AddRole()
-
     {
 
         if (!string.IsNullOrEmpty(Role.Name))
-
         {
-
-            await RoleManager.CreateAsync(Role);
-
+            Role.Name = $"Wassandashboard-{Role.Name}";
+            var result = await RoleManager.CreateAsync(Role);
+            if (!result.Succeeded)
+            {
+                // Log or display the errors from result.Errors
+                // For example: foreach(var error in result.Errors) { ... }
+                return;
+            }
             isCreateModalVisible = false; // Close the modal after creating the role
-
             var list = await RoleManager.Roles.Where(x => x.Name.StartsWith(AppConstants.ApplicationRolePrefix)).ToListAsync();
-
             roles = list.AsQueryable(); // Refresh the list of roles
-
         }
-
     }
 
     // Save updated permissions for the selected role
 
     private async Task AddPermissions()
-
     {
-
         foreach (var resp in response)
-
         {
 
             var fromdb = _context.RoleClaims

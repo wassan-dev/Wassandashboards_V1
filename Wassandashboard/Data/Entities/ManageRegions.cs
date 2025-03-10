@@ -4,5 +4,6 @@
     {
         public string UserEmail { get; set; } 
         public long RegionID { get; set; }
+
     }
 }

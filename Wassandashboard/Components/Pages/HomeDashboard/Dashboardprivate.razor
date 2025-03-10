@@ -207,8 +207,17 @@
     {
         try
         {
+
             using var context = DbFactory.CreateDbContext();
-            var reports = await context.ProjectLinks.ToListAsync();
+            var authState=await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+            var UserName = user.Identity.Name;
+            var assignedRegions = await context.ManageRegions
+              .Where(m => m.UserEmail == UserName)
+              .Select(m => m.RegionID)
+              .ToListAsync();
+              var assignedRegionsList =await _context.ProjectRegions.Where(x=>assignedRegions.Contains(x.RegionId)).Select(x=>x.ProjectId).ToListAsync();
+            var reports = await context.ProjectLinks.Where(x=>assignedRegionsList.Contains(x.ProjectId)).ToListAsync();
             if (reports?.Any() == true)
             {
                 privateReports = reports.Where(x => x.IsPrivateOrPublic == (int)ProjectVisibility.Private).ToList();
